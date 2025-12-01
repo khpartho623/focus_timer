@@ -15,6 +15,7 @@
             margin: 0;
             padding: 0;
             display: flex;
+            flex-direction: column; /* Changed to column to stack app and footer */
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -210,6 +211,13 @@
             </button>
         </div>
     </div>
+
+    <!-- Application Footer (Added below the main app container) -->
+    <footer class="text-xs text-gray-500 text-center mt-6 w-full max-w-[360px] px-4">
+        <p>&copy; 2025 All rights reserved. Powered by 
+            <a href="https://khpartho623.github.io/me/" class="text-gray-400 hover:text-red-400 transition-colors" target="_blank">KH Partho</a>.
+        </p>
+    </footer>
 
     <script>
         // --- Timer State and Logic ---
@@ -430,13 +438,5 @@
         console.log("Focus Lock Timer script initialized and ready.");
 
     </script>
- <footer>
-        <div class="container">
-            <p>&copy; 2025 All rights reserved. Powered by <a href=https://khpartho623.github.io/me/>KH Partho</a>.</p>
-        </div>
-    </footer>
-
-    
 </body>
-
 </html>
