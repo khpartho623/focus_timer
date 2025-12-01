@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Lock Timer</title>
+    
+
+<script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for Phone App Look */
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: #1a1a1a; /* Darker background for outside the simulated phone */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        #app {
+            background-color: #212121; /* App background */
+            width: 90%; /* On small screens, take 90% width */
+            max-width: 360px; /* Max width for phone look */
+            height: 100%;
+            max-height: 780px; /* Fixed maximum height for a taller ratio */
+            min-height: 600px; /* Minimum height to ensure content fits well */
+            border-radius: 2rem; /* More rounded corners */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7); /* Deep shadow for depth */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin: 20px; /* Margin to separate from viewport edges */
+        }
+        /* Ensure inner screens take up necessary space */
+        #setup-screen, #lock-screen {
+            width: 100%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically within the screen */
+            align-items: center;
+        }
+
+        /* Specific styles for the "LOCKED" text */
+        #lock-screen h1 {
+            font-size: 1.1rem; 
+            font-weight: 500; 
+            color: #d1d5db; 
+            /* margin-bottom: 15px; -> Using Tailwind mb-1 instead */
+        }
+
+        /* Specific styles for the description text */
+        #lock-message {
+            font-size: 0.85rem; 
+            color: #9ca3af; 
+            max-width: 280px; 
+            /* margin-bottom: 50px; -> Using Tailwind mb-8 instead */
+            line-height: 1.4; 
+            font-weight: 400; 
+        }
+
+        /* Specific styles for the timer display */
+        #timer-display {
+            font-size: 5rem; 
+            font-weight: 700; 
+            color: #ef4444; 
+            /* margin-bottom: 50px; -> Using Tailwind mb-8 instead */
+            letter-spacing: -1px; 
+        }
+
+        /* Specific styles for the +1 Minute button */
+        #add-minute-button {
+            border: 1px solid #ff6347; 
+            color: #ff6347;
+            padding: 0.6rem 1.8rem; 
+            border-radius: 9999px; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            transition: background-color 0.2s;
+        }
+        #add-minute-button:hover {
+            background-color: rgba(255, 99, 71, 0.1);
+        }
+        
+        /* New style for the Gemini feature output (Removed, but keeping the block for structure) */
+        #focus-tip-output {
+            min-height: 2.5rem; 
+            transition: color 0.3s;
+        }
+
+    </style>
+</head>
+<body>
+
+    
+
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        setLogLevel('Debug');
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let firebaseConfig = {};
+        try {
+            firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        } catch (e) {
+            console.error("Firebase config parsing error:", e);
+        }
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app, db, auth;
+
+        if (Object.keys(firebaseConfig).length > 0) {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            console.log("Firebase Initialized for App ID:", appId);
+
+            const authenticate = async () => {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    }
+                } catch (error) {
+                    console.error("Firebase Auth Error:", error);
+                }
+            };
+            authenticate();
+        } else {
+            console.warn("Firebase config not available. Running app without full persistence features.");
+        }
+    </script>
+    
+
+<div id="app" class="text-white">
+
+        <!-- Page 1: Setup Screen -->
+        <div id="setup-screen" class="p-6 flex flex-col items-center justify-center">
+            
+            <!-- Time Setting UI: Centralized display with Plus/Minus symbols -->
+            <div class="flex items-center justify-center mb-10">
+                
+                <!-- Minus Button (Just the symbol, no box/border/shadow) -->
+                <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 mr-6 flex items-center justify-center font-bold" aria-label="Decrease time by 5 minutes">
+                    &minus;
+                </button>
+
+                <!-- Time Display -->
+                <div id="setup-time-setter" class="mx-auto">
+                    <!-- Increased text size back to 7xl for prominence -->
+                    <div id="set-time-display" class="text-7xl font-extralight text-red-500 leading-none p-2">
+                        60
+                    </div>
+                </div>
+
+                <!-- Plus Button (Just the symbol, no box/border/shadow) -->
+                <button onclick="plusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 ml-6 flex items-center justify-center font-bold" aria-label="Increase time by 5 minutes">
+                    +
+                </button>
+            </div>
+
+
+            <!-- Hidden input to pass default time to the timer logic, updated by plus/minus -->
+            <input type="hidden" id="custom-minutes" value="60" min="1" />
+
+            <!-- Start Button -->
+            <button onclick="startTimerFromSetup()" class="bg-orange-500 hover:bg-orange-600 text-black font-bold text-xl px-12 py-4 rounded-xl shadow-lg transition duration-150 mt-4">
+                Start
+            </button>
+            
+        </div>
+
+        <!-- Page 2: Lock Screen -->
+        <div id="lock-screen" class="hidden p-6">
+            
+            <!-- 1. Timer Display (Moved to top with margin-bottom: mb-8) -->
+            <div id="timer-display" class="text-7xl font-bold text-red-500 mb-8">
+                00:00
+            </div>
+
+            <!-- 2. LOCKED Header (Reduced margin-bottom: mb-1) -->
+            <h1 class="text-xl font-medium text-gray-300 mb-1">
+                LOCKED
+            </h1>
+
+            <!-- 3. Lock Message (Added margin-bottom: mb-8) -->
+            <p id="lock-message" class="text-sm text-gray-400 max-w-sm px-4 leading-relaxed mb-8">
+                Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.
+            </p>
+
+            <!-- 4. +1 Minute Button -->
+            <button id="add-minute-button" class="timer-button mb-4" onclick="addTime(60)">
+                +1 Minute
+            </button>
+
+            <!-- 5. Emergency Stop Button -->
+            <button id="unlock-button" class="text-gray-500 text-sm mt-2 hover:text-gray-300 hidden" onclick="stopTimer(true)">
+                Emergency Stop
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Timer State and Logic ---
+        const setupScreen = document.getElementById('setup-screen');
+        const lockScreen = document.getElementById('lock-screen');
+        const timerDisplay = document.getElementById('timer-display');
+        const lockMessage = document.getElementById('lock-message');
+        const addMinuteButton = document.getElementById('add-minute-button');
+        const customMinutesInput = document.getElementById('custom-minutes'); // Hidden input
+        
+        // New elements for tap-to-set
+        const setTimeDisplay = document.getElementById('set-time-display');
+        const setupTimeSetter = document.getElementById('setup-time-setter');
+        
+        let intervalId = null;
+        let timeRemaining = 0; // Time in seconds
+        let wakeLock = null; // Variable to hold the screen wake lock
+        
+        const MIN_TIME = 5;
+        const MAX_TIME = 300; // 300 minutes (5 hours)
+        let currentSetMinutes = 60; // Default minutes set to 60
+
+        // --- Wake Lock Functions ---
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Screen Wake Lock acquired');
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Screen Wake Lock released');
+                    });
+                } catch (err) {
+                    console.error(`${err.name}, ${err.message}`);
+                }
+            }
+        };
+
+        const releaseWakeLock = () => {
+            if (wakeLock) {
+                wakeLock.release()
+                    .then(() => {
+                        wakeLock = null;
+                    });
+            }
+        };
+        
+        // --- Time Setter Logic ---
+
+        /**
+         * Updates the display element and the hidden input for the set time.
+         */
+        function updateSetTimeDisplay() {
+            setTimeDisplay.textContent = currentSetMinutes;
+            customMinutesInput.value = currentSetMinutes; // Sync value for start logic
+        }
+
+        /**
+         * Increments the focus time by the specified minutes.
+         * @param {number} minutes
+         */
+        function plusTime(minutes) {
+            currentSetMinutes += minutes;
+            if (currentSetMinutes > MAX_TIME) {
+                currentSetMinutes = MAX_TIME;
+            }
+            updateSetTimeDisplay();
+        }
+
+        /**
+         * Decrements the focus time by the specified minutes.
+         * @param {number} minutes
+         */
+        function minusTime(minutes) {
+            currentSetMinutes -= minutes;
+            if (currentSetMinutes < MIN_TIME) {
+                currentSetMinutes = MIN_TIME;
+            }
+            updateSetTimeDisplay();
+        }
+
+        // Removed: setupTimeSetter.addEventListener('click', ...) as it's replaced by buttons.
+
+
+        // --- Timer Core Logic ---
+        
+        /**
+         * Formats seconds into MM:SS string.
+         * @param {number} totalSeconds
+         * @returns {string}
+         */
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            const pad = (num) => String(num).padStart(2, '0');
+            return `${pad(minutes)}:${pad(seconds)}`;
+        }
+
+        /**
+         * Updates the timer display on the lock screen.
+         */
+        function updateDisplay() {
+            if (timeRemaining < 0) timeRemaining = 0;
+            timerDisplay.textContent = formatTime(timeRemaining);
+        }
+
+        /**
+         * Main timer countdown logic.
+         */
+        function countdown() {
+            if (timeRemaining <= 0) {
+                stopTimer();
+            } else {
+                timeRemaining--;
+                updateDisplay();
+            }
+        }
+
+        /**
+         * Starts the timer and switches to the lock screen.
+         */
+        function startTimer() {
+            if (timeRemaining <= 0) return;
+
+            // Request screen wake lock
+            requestWakeLock();
+
+            // Page transition: Hide setup, show lock screen
+            setupScreen.classList.add('hidden');
+            lockScreen.classList.remove('hidden');
+
+            // Reset messages and styling
+            lockMessage.textContent = 'Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.';
+            addMinuteButton.classList.remove('hidden');
+            document.getElementById('unlock-button').classList.remove('hidden'); // Show emergency stop button
+            timerDisplay.classList.remove('text-green-500', 'text-gray-400');
+            timerDisplay.classList.add('text-red-500');
+
+            // Start the interval
+            intervalId = setInterval(countdown, 1000);
+            updateDisplay();
+        }
+
+        /**
+         * Stops the timer and shows the result/switches back to setup.
+         * @param {boolean} emergencyStop
+         */
+        function stopTimer(emergencyStop = false) {
+            clearInterval(intervalId);
+            intervalId = null;
+
+            // Release screen wake lock
+            releaseWakeLock();
+
+            if (emergencyStop) {
+                // Emergency stop
+                lockMessage.textContent = 'Emergency stop initiated. Click below to start a new session.';
+                timerDisplay.textContent = '00:00';
+                timerDisplay.classList.remove('text-red-500', 'text-green-500');
+                timerDisplay.classList.add('text-gray-400');
+            } else {
+                // Normal completion
+                lockMessage.textContent = "Time's up! Click anywhere to start a new session.";
+                timerDisplay.textContent = '00:00';
+                timerDisplay.classList.remove('text-red-500', 'text-gray-400');
+                timerDisplay.classList.add('text-green-500'); // Green color for completion
+            }
+
+            // Hide action buttons when timer stops
+            addMinuteButton.classList.add('hidden');
+            document.getElementById('unlock-button').classList.add('hidden');
+
+
+            // Allow user to click anywhere on the lock screen to return to setup
+            lockScreen.onclick = returnToSetup;
+        }
+
+        /**
+         * Adds time to the current countdown.
+         * @param {number} seconds
+         */
+        function addTime(seconds) {
+            timeRemaining += seconds;
+            updateDisplay();
+        }
+
+        /**
+         * Gets time from input and starts the timer.
+         */
+        function startTimerFromSetup() {
+            // Read value from hidden input which is synced by the button logic.
+            const minutes = parseInt(customMinutesInput.value, 10); 
+            
+            if (isNaN(minutes) || minutes <= 0) {
+                console.error("Invalid time set.");
+                return;
+            }
+            
+            timeRemaining = minutes * 60;
+            startTimer();
+        }
+
+        /**
+         * Returns the view to the setup screen.
+         */
+        function returnToSetup() {
+            lockScreen.onclick = null; // Remove the listener
+            lockScreen.classList.add('hidden');
+            setupScreen.classList.remove('hidden');
+            currentSetMinutes = 60; // Reset setter state to default 60
+            timeRemaining = 0; // Reset time 
+            updateSetTimeDisplay(); // Update setter display
+            updateDisplay(); // Ensure lock screen display is reset
+        }
+
+        // --- Initial Setup (Runs immediately after script loads) ---
+        // Ensure initial display is set.
+        updateSetTimeDisplay(); // Initialize the custom setter display with default 60 minutes
+        console.log("Focus Lock Timer script initialized and ready.");
+
+    </script>
+</body>
+</html>
