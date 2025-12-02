@@ -7,6 +7,9 @@
     
 
 <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js library for sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
     <style>
         /* Custom CSS for Phone App Look */
         body {
@@ -212,8 +215,7 @@
 
             <!-- Application Footer (Added below Emergency Stop button, only visible on Lock Screen) -->
             <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
-                <p>&copy;All rights reserved. Powered by Partho. 
-                    
+                <p>&copy; 2025 All rights reserved. Powered by Partho.
                 </p>
             </footer>
         </div>
@@ -236,9 +238,82 @@
         let timeRemaining = 0; // Time in seconds
         let wakeLock = null; // Variable to hold the screen wake lock
         
-        const MIN_TIME = 5;
+        const MIN_TIME = 1;
         const MAX_TIME = 300; // 300 minutes (5 hours)
         let currentSetMinutes = 60; // Default minutes set to 60
+
+        // Initialize Tone.js components for sound
+        let synth = null;
+
+        /**
+         * Initializes the Tone.js synth if not already initialized.
+         * Tone.start() must be called after a user interaction.
+         */
+        async function initializeSynth() {
+            if (!synth) {
+                try {
+                    // Start the AudioContext
+                    await Tone.start();
+                    // Create a simple synth
+                    synth = new Tone.Synth({
+                        oscillator: { type: "sine" },
+                        envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 }
+                    }).toDestination();
+                    console.log("AudioContext is running and Synth is initialized.");
+                } catch (e) {
+                    console.error("Error initializing Tone.js:", e);
+                }
+            }
+        }
+
+        /**
+         * Plays the sound for starting a focus session (Upward C5, E5, G5).
+         */
+        function playFocusStartSound() {
+            // If synth is not ready, try initializing and then playing the sound
+            if (!synth || Tone.context.state !== 'running') {
+                initializeSynth().then(() => {
+                    if (synth) playFocusStartSound();
+                });
+                return;
+            }
+
+            const notes = ["C5", "E5", "G5"]; // Upward (Energetic start)
+            const duration = "8n";
+            const delay = 0.2; 
+
+            let time = Tone.now();
+            synth.triggerAttackRelease(notes[0], duration, time);
+            synth.triggerAttackRelease(notes[1], duration, time + delay);
+            synth.triggerAttackRelease(notes[2], duration, time + delay * 2);
+        }
+        
+        /**
+         * Plays the sound for session completion/end (C55, E5, G5 - as requested for completion).
+         */
+        function playFocusEndSound() {
+             // If synth is not ready, try initializing and then playing the sound
+             if (!synth || Tone.context.state !== 'running') {
+                initializeSynth().then(() => {
+                    if (synth) playFocusEndSound();
+                });
+                return;
+            }
+
+            const notes = ["C5", "E5", "G5"]; // Mixed/Tonal end sequence (Completion signal)
+            const duration = "20n";
+            const delay = 0.1; 
+
+            let time = Tone.now();
+            synth.triggerAttackRelease(notes[0], duration, time);
+            synth.triggerAttackRelease(notes[1], duration, time + delay);
+            synth.triggerAttackRelease(notes[2], duration, time + delay * 2);
+        }
+
+        // Add an event listener to the body to ensure AudioContext starts on first click/tap
+        document.body.addEventListener('mousedown', initializeSynth, { once: true });
+        document.body.addEventListener('touchstart', initializeSynth, { once: true });
+
 
         // --- Wake Lock Functions ---
         const requestWakeLock = async () => {
@@ -298,8 +373,6 @@
             updateSetTimeDisplay();
         }
 
-        // Removed: setupTimeSetter.addEventListener('click', ...) as it's replaced by buttons.
-
 
         // --- Timer Core Logic ---
         
@@ -341,6 +414,9 @@
         function startTimer() {
             if (timeRemaining <= 0) return;
 
+            // Trigger sound at the start (Upward C5, E5, G5)
+            playFocusStartSound(); 
+
             // Request screen wake lock
             requestWakeLock();
 
@@ -372,13 +448,14 @@
             releaseWakeLock();
 
             if (emergencyStop) {
-                // Emergency stop
+                // Emergency stop - NO SOUND (জরুরী থামা - কোনো শব্দ বাজবে না)
                 lockMessage.textContent = 'Emergency stop initiated. Click below to start a new session.';
                 timerDisplay.textContent = '00:00';
                 timerDisplay.classList.remove('text-red-500', 'text-green-500');
                 timerDisplay.classList.add('text-gray-400');
             } else {
-                // Normal completion
+                // Normal completion - PLAY SOUND (G4, C5, E5) (সাধারণ সমাপ্তি - শব্দ বাজবে)
+                playFocusEndSound(); 
                 lockMessage.textContent = "Time's up! Click anywhere to start a new session.";
                 timerDisplay.textContent = '00:00';
                 timerDisplay.classList.remove('text-red-500', 'text-gray-400');
@@ -440,7 +517,4 @@
     </script>
 </body>
 </html>
-
-
-
 
