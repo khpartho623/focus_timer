@@ -14,38 +14,91 @@
         /* Custom CSS for Phone App Look */
         body {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            background-color: #1a1a1a; /* Darker background for outside the simulated phone */
+            background-color: #0d0c1d; /* Deep Dark Blue for space background */
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column; /* Changed to column to stack app and footer */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow: hidden; /* Hide scrollbars caused by falling stars */
         }
-        #app {
-            background-color: #212121; /* App background */
-            width: 90%; /* On small screens, take 90% width */
-            max-width: 360px; /* Max width for phone look */
+        
+        /* ---------------------------------- */
+        /* STARFIELD ANIMATION STYLES (তারার অ্যানিমেশন) */
+        /* ---------------------------------- */
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-            max-height: 780px; /* Fixed maximum height for a taller ratio */
-            min-height: 600px; /* Minimum height to ensure content fits well */
-            border-radius: 2rem; /* More rounded corners */
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7); /* Deep shadow for depth */
+            z-index: -1; /* Keep it behind the app container */
+            pointer-events: none; /* Ignore mouse events */
+        }
+        
+        .star {
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.4); /* Subtle glow */
+            opacity: 0;
+            animation-name: shoot;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translate(0, 0) rotate(225deg);
+                opacity: 1;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            50% {
+                opacity: 0.3;
+            }
+            100% {
+                /* Travel diagonally down and right */
+                transform: translate(calc(100vw + 300px), calc(100vh + 300px)) rotate(225deg);
+                opacity: 0;
+            }
+        }
+        /* ---------------------------------- */
+        /* END STARFIELD STYLES */
+        /* ---------------------------------- */
+
+
+        #app {
+            /* Background changed to semi-transparent to let stars show through */
+            background-color: rgba(0, 0, 0, 0.3); 
+            backdrop-filter: none; /* Removed blur for clearer star visibility */
+            width: 90%; 
+            max-width: 360px; 
+            height: 100%;
+            max-height: 780px; 
+            min-height: 600px; 
+            border-radius: 2rem; 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7); 
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            margin: 20px; /* Margin to separate from viewport edges */
+            margin: 20px; 
+            position: relative; 
+            z-index: 1;
         }
+        
         /* Ensure inner screens take up necessary space */
         #setup-screen, #lock-screen {
             width: 100%;
             min-height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Center content vertically within the screen */
+            justify-content: center; 
             align-items: center;
         }
 
@@ -54,7 +107,6 @@
             font-size: 1.1rem; 
             font-weight: 500; 
             color: #d1d5db; 
-            /* margin-bottom: 15px; -> Using Tailwind mb-1 instead */
         }
 
         /* Specific styles for the description text */
@@ -62,7 +114,6 @@
             font-size: 0.85rem; 
             color: #9ca3af; 
             max-width: 280px; 
-            /* margin-bottom: 50px; -> Using Tailwind mb-8 instead */
             line-height: 1.4; 
             font-weight: 400; 
         }
@@ -72,7 +123,6 @@
             font-size: 5rem; 
             font-weight: 700; 
             color: #ef4444; 
-            /* margin-bottom: 50px; -> Using Tailwind mb-8 instead */
             letter-spacing: -1px; 
         }
 
@@ -100,9 +150,10 @@
 </head>
 <body>
 
-    
+    <!-- Starfield Background (তারার ব্যাকগ্রাউন্ড) -->
+    <div id="starfield"></div>
 
-<script type="module">
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -215,7 +266,8 @@
 
             <!-- Application Footer (Application Footer) -->
             <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
-                <p>&copy; 2025 All rights reserved. Powered by KH Partho.
+                <p>&copy; 2025 All rights reserved. Powered by Partho. 
+                    
                 </p>
             </footer>
         </div>
@@ -244,6 +296,10 @@
 
         // Initialize Tone.js components for sound (Sound-er jonno Tone.js initialize kora)
         let synth = null;
+        
+        // Starfield elements
+        const starfield = document.getElementById('starfield');
+        const numStars = 20; // Number of shooting stars (Koto gulo tara khosbe)
 
         /**
          * Initializes the Tone.js synth if not already initialized. (Tone.js initialize kora)
@@ -310,6 +366,41 @@
             setTimeout(() => {
                 playFocusStartSound();
             }, 3000);
+        }
+
+        /**
+         * Creates and initializes the shooting star animations. (Shooting star animation toiri kora)
+         */
+        function createStars() {
+            if (!starfield) return;
+
+            for (let i = 0; i < numStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+
+                // Random size (0.5px to 2px)
+                const size = Math.random() * 1.5 + 0.5; 
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+
+                // Random position (Mostly top-left quadrant for diagonal travel)
+                // Use random number generation up to 100% of viewport width/height
+                const startX = Math.random() * window.innerWidth * 1.5 - (window.innerWidth * 0.5); 
+                const startY = Math.random() * window.innerHeight * 1.5 - (window.innerHeight * 0.5); 
+                
+                // Adjust position to ensure they start off-screen slightly
+                star.style.left = `${startX}px`;
+                star.style.top = `${startY}px`;
+
+                // Random animation duration (3s to 8s) and delay
+                const duration = Math.random() * 5 + 3; 
+                const delay = Math.random() * 20; 
+                
+                star.style.animationDuration = `${duration}s`;
+                star.style.animationDelay = `${delay}s`;
+
+                starfield.appendChild(star);
+            }
         }
 
 
@@ -424,98 +515,4 @@
 
             // Reset messages and styling (Message o styling reset kora)
             lockMessage.textContent = 'Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.';
-            addMinuteButton.classList.remove('hidden');
-            document.getElementById('unlock-button').classList.remove('hidden'); // Show emergency stop button (Emergency stop button dekhano)
-            timerDisplay.classList.remove('text-green-500', 'text-gray-400');
-            timerDisplay.classList.add('text-red-500');
-
-            // Start the interval (Interval shuru kora)
-            intervalId = setInterval(countdown, 1000);
-            updateDisplay();
-        }
-
-        /**
-         * Stops the timer and shows the result/switches back to setup. (Timer thamiye result dekhano)
-         * @param {boolean} emergencyStop
-         */
-        function stopTimer(emergencyStop = false) {
-            clearInterval(intervalId);
-            intervalId = null;
-
-            // Release screen wake lock (Screen wake lock release kora)
-            releaseWakeLock();
-
-            if (emergencyStop) {
-                // Emergency stop - NO SOUND (Joruri thama - kono shobdo nei)
-                lockMessage.textContent = 'Emergency stop initiated. Click below to start a new session.';
-                timerDisplay.textContent = '00:00';
-                timerDisplay.classList.remove('text-red-500', 'text-green-500');
-                timerDisplay.classList.add('text-gray-400');
-            } else {
-                // Normal completion - PLAY QUADRUPLE START SOUND (Shadharon shesh - char bar sound bajano)
-                playFocusEndSequence(); 
-                lockMessage.textContent = "Time's up! Click anywhere to start a new session.";
-                timerDisplay.textContent = '00:00';
-                timerDisplay.classList.remove('text-red-500', 'text-gray-400');
-                timerDisplay.classList.add('text-green-500'); // Green color for completion (Shesh hobar jonno shobuj rong)
-            }
-
-            // Hide action buttons when timer stops (Timer thamle button gulo lukono)
-            addMinuteButton.classList.add('hidden');
-            document.getElementById('unlock-button').classList.add('hidden');
-
-
-            // Allow user to click anywhere on the lock screen to return to setup (Click korle setup-e phire jawa)
-            lockScreen.onclick = returnToSetup;
-        }
-
-        /**
-         * Adds time to the current countdown. (Countdown-e shomoy jog kora)
-         * @param {number} seconds
-         */
-        function addTime(seconds) {
-            timeRemaining += seconds;
-            updateDisplay();
-        }
-
-        /**
-         * Gets time from input and starts the timer. (Input theke shomoy niye timer shuru kora)
-         */
-        async function startTimerFromSetup() {
-            // Read value from hidden input which is synced by the button logic. (Hidden input theke value pora)
-            const minutes = parseInt(customMinutesInput.value, 10); 
-            
-            if (isNaN(minutes) || minutes <= 0) {
-                console.error("Invalid time set.");
-                return;
-            }
-            
-            // Critical fix: Initialize AudioContext right on the Start button click (Start button click-e AudioContext initialize kora)
-            await initializeSynth();
-
-            timeRemaining = minutes * 60;
-            startTimer();
-        }
-
-        /**
-         * Returns the view to the setup screen. (Setup screen-e phire jawa)
-         */
-        function returnToSetup() {
-            lockScreen.onclick = null; // Remove the listener (Listener shoriye dewa)
-            lockScreen.classList.add('hidden');
-            setupScreen.classList.remove('hidden');
-            currentSetMinutes = 60; // Reset setter state to default 60 (Setter obostha reset kora)
-            timeRemaining = 0; // Reset time (Shomoy reset kora)
-            updateSetTimeDisplay(); // Update setter display (Setter display update kora)
-            updateDisplay(); // Ensure lock screen display is reset (Lock screen display reset ensure kora)
-        }
-
-        // --- Initial Setup (Runs immediately after script loads) (Prothomik setup) ---
-        // Ensure initial display is set. (Prothomik display set kora ensure kora)
-        updateSetTimeDisplay(); // Initialize the custom setter display with default 60 minutes (Default 60 minute diye custom setter display initialize kora)
-        console.log("Focus Lock Timer script initialized and ready.");
-
-    </script>
-</body>
-</html>
-
+            addMinuteButton.classList.remove('hi
