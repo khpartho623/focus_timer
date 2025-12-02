@@ -216,6 +216,7 @@
             <!-- Application Footer (Added below Emergency Stop button, only visible on Lock Screen) -->
             <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
                 <p>&copy; 2025 All rights reserved. Powered by Partho.
+   
                 </p>
             </footer>
         </div>
@@ -238,7 +239,7 @@
         let timeRemaining = 0; // Time in seconds
         let wakeLock = null; // Variable to hold the screen wake lock
         
-        const MIN_TIME = 1;
+        const MIN_TIME = 5;
         const MAX_TIME = 300; // 300 minutes (5 hours)
         let currentSetMinutes = 60; // Default minutes set to 60
 
@@ -289,7 +290,7 @@
         }
         
         /**
-         * Plays the sound for session completion/end (C5, E5, G5 - as requested for completion).
+         * Plays the sound for session completion/end (G4, C5, E5 - sustained for 5 seconds).
          */
         function playFocusEndSound() {
              // If synth is not ready, try initializing and then playing the sound
@@ -300,14 +301,11 @@
                 return;
             }
 
-            const notes = ["G4", "C5", "E5"]; // Mixed/Tonal end sequence (Completion signal)
-            const duration = "4n";
-            const delay = 0.2; 
+            const notes = ["G4", "C5", "E5"]; // C Major Inversion chord
+            const duration = 5; // Sustain the chord for 5 seconds
 
-            let time = Tone.now();
-            synth.triggerAttackRelease(notes[0], duration, time);
-            synth.triggerAttackRelease(notes[1], duration, time + delay);
-            synth.triggerAttackRelease(notes[2], duration, time + delay * 2);
+            // Play the chord and sustain it for 5 seconds
+            synth.triggerAttackRelease(notes, duration, Tone.now());
         }
 
         // Add an event listener to the body to ensure AudioContext starts on first click/tap
@@ -454,7 +452,7 @@
                 timerDisplay.classList.remove('text-red-500', 'text-green-500');
                 timerDisplay.classList.add('text-gray-400');
             } else {
-                // Normal completion - PLAY SOUND (G4, C5, E5) (সাধারণ সমাপ্তি - শব্দ বাজবে)
+                // Normal completion - PLAY SOUND (G4, C5, E5) sustained for 5 seconds.
                 playFocusEndSound(); 
                 lockMessage.textContent = "Time's up! Click anywhere to start a new session.";
                 timerDisplay.textContent = '00:00';
