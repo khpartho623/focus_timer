@@ -215,8 +215,8 @@
 
             <!-- Application Footer (Added below Emergency Stop button, only visible on Lock Screen) -->
             <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
-                <p>&copy; 2025 All rights reserved. Powered by Partho.
-   
+                <p>&copy; 2025 All rights reserved. Powered by 
+                    <a href="https://khpartho623.github.io/me/" class="text-gray-400 hover:text-red-400 transition-colors" target="_blank">KH Partho</a>.
                 </p>
             </footer>
         </div>
@@ -239,7 +239,7 @@
         let timeRemaining = 0; // Time in seconds
         let wakeLock = null; // Variable to hold the screen wake lock
         
-        const MIN_TIME = 1;
+        const MIN_TIME = 5;
         const MAX_TIME = 300; // 300 minutes (5 hours)
         let currentSetMinutes = 60; // Default minutes set to 60
 
@@ -290,7 +290,7 @@
         }
         
         /**
-         * Plays the sound for session completion/end (G4, C5, E5 - sustained for 5 seconds).
+         * Plays the sound for session completion/end (G4, C5, E5 - sustained for 6 seconds).
          */
         function playFocusEndSound() {
              // If synth is not ready, try initializing and then playing the sound
@@ -302,9 +302,9 @@
             }
 
             const notes = ["G4", "C5", "E5"]; // C Major Inversion chord
-            const duration = 5; // Sustain the chord for 5 seconds
+            const duration = 6; // Sustain the chord for 6 seconds
 
-            // Play the chord and sustain it for 5 seconds
+            // Play the chord and sustain it for 6 seconds
             synth.triggerAttackRelease(notes, duration, Tone.now());
         }
 
@@ -452,7 +452,7 @@
                 timerDisplay.classList.remove('text-red-500', 'text-green-500');
                 timerDisplay.classList.add('text-gray-400');
             } else {
-                // Normal completion - PLAY SOUND (G4, C5, E5) sustained for 5 seconds.
+                // Normal completion - PLAY SOUND (G4, C5, E5) sustained for 6 seconds.
                 playFocusEndSound(); 
                 lockMessage.textContent = "Time's up! Click anywhere to start a new session.";
                 timerDisplay.textContent = '00:00';
@@ -509,10 +509,4 @@
 
         // --- Initial Setup (Runs immediately after script loads) ---
         // Ensure initial display is set.
-        updateSetTimeDisplay(); // Initialize the custom setter display with default 60 minutes
-        console.log("Focus Lock Timer script initialized and ready.");
-
-    </script>
-</body>
-</html>
-
+        updateSetT
