@@ -149,18 +149,18 @@
 
 <div id="app" class="text-white">
 
-        <!-- Page 1: Setup Screen -->
+        <!-- Page 1: Setup Screen (Setup Screen) -->
         <div id="setup-screen" class="p-6 flex flex-col items-center justify-center">
             
-            <!-- Time Setting UI: Centralized display with Plus/Minus symbols -->
+            <!-- Time Setting UI: Centralized display with Plus/Minus symbols (Shomoy set korar UI: Plus/Minus symbol soho modhyoborti display) -->
             <div class="flex items-center justify-center mb-10">
                 
-                <!-- Minus Button (Just the symbol, no box/border/shadow) -->
+                <!-- Minus Button (Minus button) -->
                 <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 mr-6 flex items-center justify-center font-bold" aria-label="Decrease time by 5 minutes">
                     &minus;
                 </button>
 
-                <!-- Time Display -->
+                <!-- Time Display (Shomoy display) -->
                 <div id="setup-time-setter" class="mx-auto">
                     <!-- Increased text size back to 7xl for prominence -->
                     <div id="set-time-display" class="text-7xl font-extralight text-red-500 leading-none p-2">
@@ -168,62 +168,61 @@
                     </div>
                 </div>
 
-                <!-- Plus Button (Just the symbol, no box/border/shadow) -->
+                <!-- Plus Button (Plus button) -->
                 <button onclick="plusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 ml-6 flex items-center justify-center font-bold" aria-label="Increase time by 5 minutes">
                     +
                 </button>
             </div>
 
 
-            <!-- Hidden input to pass default time to the timer logic, updated by plus/minus -->
+            <!-- Hidden input to pass default time to the timer logic, updated by plus/minus (Hidden input) -->
             <input type="hidden" id="custom-minutes" value="60" min="1" />
 
-            <!-- Start Button -->
+            <!-- Start Button (Start button) -->
             <button onclick="startTimerFromSetup()" class="bg-orange-500 hover:bg-orange-600 text-black font-bold text-xl px-12 py-4 rounded-xl shadow-lg transition duration-150 mt-4">
                 Start
             </button>
             
         </div>
 
-        <!-- Page 2: Lock Screen -->
+        <!-- Page 2: Lock Screen (Lock Screen) -->
         <div id="lock-screen" class="hidden p-6">
             
-            <!-- 1. Timer Display (Moved to top with margin-bottom: mb-8) -->
+            <!-- 1. Timer Display (Timer display) -->
             <div id="timer-display" class="text-7xl font-bold text-red-500 mb-8">
                 00:00
             </div>
 
-            <!-- 2. LOCKED Header (Reduced margin-bottom: mb-1) -->
+            <!-- 2. LOCKED Header (LOCKED header) -->
             <h1 class="text-xl font-medium text-gray-300 mb-1">
                 LOCKED
             </h1>
 
-            <!-- 3. Lock Message (Added margin-bottom: mb-8) -->
+            <!-- 3. Lock Message (Lock message) -->
             <p id="lock-message" class="text-sm text-gray-400 max-w-sm px-4 leading-relaxed mb-8">
                 Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.
             </p>
 
-            <!-- 4. +1 Minute Button -->
+            <!-- 4. +1 Minute Button (+1 Minute button) -->
             <button id="add-minute-button" class="timer-button mb-4" onclick="addTime(60)">
                 +1 Minute
             </button>
 
-            <!-- 5. Emergency Stop Button -->
+            <!-- 5. Emergency Stop Button (Emergency Stop button) -->
             <button id="unlock-button" class="text-gray-500 text-sm mt-2 hover:text-gray-300 hidden" onclick="stopTimer(true)">
                 Emergency Stop
             </button>
 
-            <!-- Application Footer (Added below Emergency Stop button, only visible on Lock Screen) -->
+            <!-- Application Footer (Application Footer) -->
             <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
-                <p>&copy; 2025 All rights reserved. Powered by 
-                    <a href="https://khpartho623.github.io/me/" class="text-gray-400 hover:text-red-400 transition-colors" target="_blank">KH Partho</a>.
+                <p>&copy; 2025 All rights reserved. Powered by KH Partho.
                 </p>
             </footer>
         </div>
     </div>
 
     <script>
-        // --- Timer State and Logic ---
+        // --- Timer State and Logic (Timer-er obostha o tar bebohar) ---
         const setupScreen = document.getElementById('setup-screen');
         const lockScreen = document.getElementById('lock-screen');
         const timerDisplay = document.getElementById('timer-display');
@@ -231,24 +230,23 @@
         const addMinuteButton = document.getElementById('add-minute-button');
         const customMinutesInput = document.getElementById('custom-minutes'); // Hidden input
         
-        // New elements for tap-to-set
+        // New elements for tap-to-set (Shomoy set korar notun element)
         const setTimeDisplay = document.getElementById('set-time-display');
         const setupTimeSetter = document.getElementById('setup-time-setter');
         
         let intervalId = null;
-        let timeRemaining = 0; // Time in seconds
-        let wakeLock = null; // Variable to hold the screen wake lock
+        let timeRemaining = 0; // Time in seconds (Shomoy second-e)
+        let wakeLock = null; // Variable to hold the screen wake lock (Screen wake lock dhorar jonno variable)
         
-        const MIN_TIME = 1;
-        const MAX_TIME = 300; // 300 minutes (5 hours)
-        let currentSetMinutes = 60; // Default minutes set to 60
+        const MIN_TIME = 1; // 1 minute (1 minute)
+        const MAX_TIME = 300; // 300 minutes (5 hours) (300 minute)
+        let currentSetMinutes = 60; // Default minutes set to 60 (Default 60 minute set kora)
 
-        // Initialize Tone.js components for sound
+        // Initialize Tone.js components for sound (Sound-er jonno Tone.js initialize kora)
         let synth = null;
 
         /**
-         * Initializes the Tone.js synth if not already initialized.
-         * Tone.start() must be called after a user interaction.
+         * Initializes the Tone.js synth if not already initialized. (Tone.js initialize kora)
          */
         async function initializeSynth() {
             if (!synth) {
@@ -268,14 +266,11 @@
         }
 
         /**
-         * Plays the sound for starting a focus session (Upward C5, E5, G5).
+         * Plays the sound for starting a focus session (Upward C5, E5, G5). (Focus session shuru korar sound bajano)
          */
         function playFocusStartSound() {
-            // If synth is not ready, try initializing and then playing the sound
             if (!synth || Tone.context.state !== 'running') {
-                initializeSynth().then(() => {
-                    if (synth) playFocusStartSound();
-                });
+                console.warn("Synth not ready to play start sound.");
                 return;
             }
 
@@ -290,30 +285,35 @@
         }
         
         /**
-         * Plays the sound for session completion/end (G4, C5, E5 - sustained for 6 seconds).
+         * Plays the sound for session completion (quadruple 'tung tung'). (Session sesh hobar sound, char bar)
          */
-        function playFocusEndSound() {
-             // If synth is not ready, try initializing and then playing the sound
-             if (!synth || Tone.context.state !== 'running') {
-                initializeSynth().then(() => {
-                    if (synth) playFocusEndSound();
-                });
+        function playFocusEndSequence() {
+            if (!synth || Tone.context.state !== 'running') {
+                console.warn("Synth not ready to play end sound.");
                 return;
             }
 
-            const notes = ["G4", "C5", "E5"]; // C Major Inversion chord
-            const duration = 6; // Sustain the chord for 6 seconds
+            // Play 1st (Prothom bar)
+            playFocusStartSound();
 
-            // Play the chord and sustain it for 6 seconds
-            synth.triggerAttackRelease(notes, duration, Tone.now());
+            // Play 2nd after 1s (Ditiyo bar 1s por)
+            setTimeout(() => {
+                playFocusStartSound();
+            }, 1000); 
+            
+            // Play 3rd after 2s (Tritiyo bar 2s por)
+            setTimeout(() => {
+                playFocusStartSound();
+            }, 2000);
+            
+            // Play 4th after 3s (Choturtho bar 3s por)
+            setTimeout(() => {
+                playFocusStartSound();
+            }, 3000);
         }
 
-        // Add an event listener to the body to ensure AudioContext starts on first click/tap
-        document.body.addEventListener('mousedown', initializeSynth, { once: true });
-        document.body.addEventListener('touchstart', initializeSynth, { once: true });
 
-
-        // --- Wake Lock Functions ---
+        // --- Wake Lock Functions (Wake Lock Functions) ---
         const requestWakeLock = async () => {
             if ('wakeLock' in navigator) {
                 try {
@@ -337,10 +337,10 @@
             }
         };
         
-        // --- Time Setter Logic ---
+        // --- Time Setter Logic (Shomoy set korar logic) ---
 
         /**
-         * Updates the display element and the hidden input for the set time.
+         * Updates the display element and the hidden input for the set time. (Shomoy display o hidden input update kora)
          */
         function updateSetTimeDisplay() {
             setTimeDisplay.textContent = currentSetMinutes;
@@ -348,7 +348,7 @@
         }
 
         /**
-         * Increments the focus time by the specified minutes.
+         * Increments the focus time by the specified minutes. (Shomoy barano)
          * @param {number} minutes
          */
         function plusTime(minutes) {
@@ -360,7 +360,7 @@
         }
 
         /**
-         * Decrements the focus time by the specified minutes.
+         * Decrements the focus time by the specified minutes. (Shomoy komano)
          * @param {number} minutes
          */
         function minusTime(minutes) {
@@ -372,10 +372,10 @@
         }
 
 
-        // --- Timer Core Logic ---
+        // --- Timer Core Logic (Timer-er mul logic) ---
         
         /**
-         * Formats seconds into MM:SS string.
+         * Formats seconds into MM:SS string. (Second-ke MM:SS string-e rupantor kora)
          * @param {number} totalSeconds
          * @returns {string}
          */
@@ -387,7 +387,7 @@
         }
 
         /**
-         * Updates the timer display on the lock screen.
+         * Updates the timer display on the lock screen. (Timer display update kora)
          */
         function updateDisplay() {
             if (timeRemaining < 0) timeRemaining = 0;
@@ -395,7 +395,7 @@
         }
 
         /**
-         * Main timer countdown logic.
+         * Main timer countdown logic. (Mul countdown logic)
          */
         function countdown() {
             if (timeRemaining <= 0) {
@@ -407,70 +407,70 @@
         }
 
         /**
-         * Starts the timer and switches to the lock screen.
+         * Starts the timer and switches to the lock screen. (Timer shuru kora o lock screen-e jawa)
          */
         function startTimer() {
             if (timeRemaining <= 0) return;
 
-            // Trigger sound at the start (Upward C5, E5, G5)
+            // Trigger sound at the start (Upward C5, E5, G5) (Shurute sound bajano)
             playFocusStartSound(); 
 
-            // Request screen wake lock
+            // Request screen wake lock (Screen wake lock anurodh kora)
             requestWakeLock();
 
-            // Page transition: Hide setup, show lock screen
+            // Page transition: Hide setup, show lock screen (Page poriborton)
             setupScreen.classList.add('hidden');
             lockScreen.classList.remove('hidden');
 
-            // Reset messages and styling
+            // Reset messages and styling (Message o styling reset kora)
             lockMessage.textContent = 'Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.';
             addMinuteButton.classList.remove('hidden');
-            document.getElementById('unlock-button').classList.remove('hidden'); // Show emergency stop button
+            document.getElementById('unlock-button').classList.remove('hidden'); // Show emergency stop button (Emergency stop button dekhano)
             timerDisplay.classList.remove('text-green-500', 'text-gray-400');
             timerDisplay.classList.add('text-red-500');
 
-            // Start the interval
+            // Start the interval (Interval shuru kora)
             intervalId = setInterval(countdown, 1000);
             updateDisplay();
         }
 
         /**
-         * Stops the timer and shows the result/switches back to setup.
+         * Stops the timer and shows the result/switches back to setup. (Timer thamiye result dekhano)
          * @param {boolean} emergencyStop
          */
         function stopTimer(emergencyStop = false) {
             clearInterval(intervalId);
             intervalId = null;
 
-            // Release screen wake lock
+            // Release screen wake lock (Screen wake lock release kora)
             releaseWakeLock();
 
             if (emergencyStop) {
-                // Emergency stop - NO SOUND (জরুরী থামা - কোনো শব্দ বাজবে না)
+                // Emergency stop - NO SOUND (Joruri thama - kono shobdo nei)
                 lockMessage.textContent = 'Emergency stop initiated. Click below to start a new session.';
                 timerDisplay.textContent = '00:00';
                 timerDisplay.classList.remove('text-red-500', 'text-green-500');
                 timerDisplay.classList.add('text-gray-400');
             } else {
-                // Normal completion - PLAY SOUND (G4, C5, E5) sustained for 6 seconds.
-                playFocusEndSound(); 
+                // Normal completion - PLAY QUADRUPLE START SOUND (Shadharon shesh - char bar sound bajano)
+                playFocusEndSequence(); 
                 lockMessage.textContent = "Time's up! Click anywhere to start a new session.";
                 timerDisplay.textContent = '00:00';
                 timerDisplay.classList.remove('text-red-500', 'text-gray-400');
-                timerDisplay.classList.add('text-green-500'); // Green color for completion
+                timerDisplay.classList.add('text-green-500'); // Green color for completion (Shesh hobar jonno shobuj rong)
             }
 
-            // Hide action buttons when timer stops
+            // Hide action buttons when timer stops (Timer thamle button gulo lukono)
             addMinuteButton.classList.add('hidden');
             document.getElementById('unlock-button').classList.add('hidden');
 
 
-            // Allow user to click anywhere on the lock screen to return to setup
+            // Allow user to click anywhere on the lock screen to return to setup (Click korle setup-e phire jawa)
             lockScreen.onclick = returnToSetup;
         }
 
         /**
-         * Adds time to the current countdown.
+         * Adds time to the current countdown. (Countdown-e shomoy jog kora)
          * @param {number} seconds
          */
         function addTime(seconds) {
@@ -479,10 +479,10 @@
         }
 
         /**
-         * Gets time from input and starts the timer.
+         * Gets time from input and starts the timer. (Input theke shomoy niye timer shuru kora)
          */
-        function startTimerFromSetup() {
-            // Read value from hidden input which is synced by the button logic.
+        async function startTimerFromSetup() {
+            // Read value from hidden input which is synced by the button logic. (Hidden input theke value pora)
             const minutes = parseInt(customMinutesInput.value, 10); 
             
             if (isNaN(minutes) || minutes <= 0) {
@@ -490,23 +490,32 @@
                 return;
             }
             
+            // Critical fix: Initialize AudioContext right on the Start button click (Start button click-e AudioContext initialize kora)
+            await initializeSynth();
+
             timeRemaining = minutes * 60;
             startTimer();
         }
 
         /**
-         * Returns the view to the setup screen.
+         * Returns the view to the setup screen. (Setup screen-e phire jawa)
          */
         function returnToSetup() {
-            lockScreen.onclick = null; // Remove the listener
+            lockScreen.onclick = null; // Remove the listener (Listener shoriye dewa)
             lockScreen.classList.add('hidden');
             setupScreen.classList.remove('hidden');
-            currentSetMinutes = 60; // Reset setter state to default 60
-            timeRemaining = 0; // Reset time 
-            updateSetTimeDisplay(); // Update setter display
-            updateDisplay(); // Ensure lock screen display is reset
+            currentSetMinutes = 60; // Reset setter state to default 60 (Setter obostha reset kora)
+            timeRemaining = 0; // Reset time (Shomoy reset kora)
+            updateSetTimeDisplay(); // Update setter display (Setter display update kora)
+            updateDisplay(); // Ensure lock screen display is reset (Lock screen display reset ensure kora)
         }
 
-        // --- Initial Setup (Runs immediately after script loads) ---
-        // Ensure initial display is set.
-        updateSetT
+        // --- Initial Setup (Runs immediately after script loads) (Prothomik setup) ---
+        // Ensure initial display is set. (Prothomik display set kora ensure kora)
+        updateSetTimeDisplay(); // Initialize the custom setter display with default 60 minutes (Default 60 minute diye custom setter display initialize kora)
+        console.log("Focus Lock Timer script initialized and ready.");
+
+    </script>
+</body>
+</html>
+
