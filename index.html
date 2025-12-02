@@ -266,8 +266,8 @@
 
             <!-- Application Footer (Application Footer) -->
             <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
-                <p>&copy; 2025 All rights reserved. Powered by Partho. 
-                    
+                <p>&copy; 2025 All rights reserved. Powered by 
+                    <a href="https://khpartho.github.io/me/" class="text-gray-400 hover:text-red-400 transition-colors" target="_blank">KH Partho</a>.
                 </p>
             </footer>
         </div>
@@ -374,6 +374,9 @@
         function createStars() {
             if (!starfield) return;
 
+            // Clear previous stars if any (Jodi kono aager tara thake, muche dewa)
+            starfield.innerHTML = ''; 
+
             for (let i = 0; i < numStars; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
@@ -385,8 +388,12 @@
 
                 // Random position (Mostly top-left quadrant for diagonal travel)
                 // Use random number generation up to 100% of viewport width/height
-                const startX = Math.random() * window.innerWidth * 1.5 - (window.innerWidth * 0.5); 
-                const startY = Math.random() * window.innerHeight * 1.5 - (window.innerHeight * 0.5); 
+                // Using document.documentElement.clientWidth/Height for compatibility
+                const clientW = document.documentElement.clientWidth;
+                const clientH = document.documentElement.clientHeight;
+                
+                const startX = Math.random() * clientW * 1.5 - (clientW * 0.5); 
+                const startY = Math.random() * clientH * 1.5 - (clientH * 0.5); 
                 
                 // Adjust position to ensure they start off-screen slightly
                 star.style.left = `${startX}px`;
@@ -515,4 +522,107 @@
 
             // Reset messages and styling (Message o styling reset kora)
             lockMessage.textContent = 'Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.';
-            addMinuteButton.classList.remove('hi
+            addMinuteButton.classList.remove('hidden');
+            document.getElementById('unlock-button').classList.remove('hidden'); // Show emergency stop button (Emergency stop button dekhano)
+            timerDisplay.classList.remove('text-green-500', 'text-gray-400');
+            timerDisplay.classList.add('text-red-500');
+
+            // Start the interval (Interval shuru kora)
+            intervalId = setInterval(countdown, 1000);
+            updateDisplay();
+        }
+
+        /**
+         * Stops the timer and shows the result/switches back to setup. (Timer thamiye result dekhano)
+         * @param {boolean} emergencyStop
+         */
+        function stopTimer(emergencyStop = false) {
+            clearInterval(intervalId);
+            intervalId = null;
+
+            // Release screen wake lock (Screen wake lock release kora)
+            releaseWakeLock();
+
+            if (emergencyStop) {
+                // Emergency stop - NO SOUND (Joruri thama - kono shobdo nei)
+                lockMessage.textContent = 'Emergency stop initiated. Click below to start a new session.';
+                timerDisplay.textContent = '00:00';
+                timerDisplay.classList.remove('text-red-500', 'text-green-500');
+                timerDisplay.classList.add('text-gray-400');
+            } else {
+                // Normal completion - PLAY QUADRUPLE START SOUND (Shadharon shesh - char bar sound bajano)
+                playFocusEndSequence(); 
+                lockMessage.textContent = "Time's up! Click anywhere to start a new session.";
+                timerDisplay.textContent = '00:00';
+                timerDisplay.classList.remove('text-red-500', 'text-gray-400');
+                timerDisplay.classList.add('text-green-500'); // Green color for completion (Shesh hobar jonno shobuj rong)
+            }
+
+            // Hide action buttons when timer stops (Timer thamle button gulo lukono)
+            addMinuteButton.classList.add('hidden');
+            document.getElementById('unlock-button').classList.add('hidden');
+
+
+            // Allow user to click anywhere on the lock screen to return to setup (Click korle setup-e phire jawa)
+            lockScreen.onclick = returnToSetup;
+        }
+
+        /**
+         * Adds time to the current countdown. (Countdown-e shomoy jog kora)
+         * @param {number} seconds
+         */
+        function addTime(seconds) {
+            timeRemaining += seconds;
+            updateDisplay();
+        }
+
+        /**
+         * Gets time from input and starts the timer. (Input theke shomoy niye timer shuru kora)
+         */
+        async function startTimerFromSetup() {
+            // Read value from hidden input which is synced by the button logic. (Hidden input theke value pora)
+            const minutes = parseInt(customMinutesInput.value, 10); 
+            
+            if (isNaN(minutes) || minutes <= 0) {
+                console.error("Invalid time set.");
+                return;
+            }
+            
+            // Critical fix: Initialize AudioContext right on the Start button click (Start button click-e AudioContext initialize kora)
+            await initializeSynth();
+
+            timeRemaining = minutes * 60;
+            startTimer();
+        }
+
+        /**
+         * Returns the view to the setup screen. (Setup screen-e phire jawa)
+         */
+        function returnToSetup() {
+            lockScreen.onclick = null; // Remove the listener (Listener shoriye dewa)
+            lockScreen.classList.add('hidden');
+            setupScreen.classList.remove('hidden');
+            currentSetMinutes = 60; // Reset setter state to default 60 (Setter obostha reset kora)
+            timeRemaining = 0; // Reset time (Shomoy reset kora)
+            updateSetTimeDisplay(); // Update setter display (Setter display update kora)
+            updateDisplay(); // Ensure lock screen display is reset (Lock screen display reset ensure kora)
+        }
+
+        // --- Initial Setup (Runs immediately after script loads) (Prothomik setup) ---
+        
+        // Initialize the starfield and display once the DOM is fully loaded (DOM load howar por starfield o display initialize kora)
+        document.addEventListener('DOMContentLoaded', () => {
+             try {
+                createStars();
+                // Ensure initial display is set. (Prothomik display set kora ensure kora)
+                updateSetTimeDisplay(); 
+                console.log("Focus Lock Timer script initialized and ready.");
+             } catch(e) {
+                console.error("Initialization Error:", e);
+             }
+        });
+
+    </script>
+</body>
+</html>
+
