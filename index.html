@@ -300,9 +300,9 @@
                 return;
             }
 
-            const notes = ["C5", "E5", "G5"]; // Mixed/Tonal end sequence (Completion signal)
-            const duration = "20n";
-            const delay = 0.1; 
+            const notes = ["G4", "C5", "E5"]; // Mixed/Tonal end sequence (Completion signal)
+            const duration = "4n";
+            const delay = 0.2; 
 
             let time = Tone.now();
             synth.triggerAttackRelease(notes[0], duration, time);
