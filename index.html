@@ -146,6 +146,13 @@
             transition: color 0.3s;
         }
 
+        /* --- Custom fix: Remove focus outline on buttons (ফিক্স: বাটন থেকে ফোকাস আউটলাইন সরানো) --- */
+        button:focus, button:active {
+            outline: none;
+            box-shadow: none;
+        }
+        /* --------------------------------------------------------------------------------- */
+
     </style>
 </head>
 <body>
@@ -229,8 +236,8 @@
         <!-- Hidden input to pass default time to the timer logic, updated by plus/minus (Hidden input) -->
         <input type="hidden" id="custom-minutes" value="60" min="1" />
 
-        <!-- Start Button (Start button) - UPDATED TO BE MEDIUM DIM (মাঝামাঝি আবছা করা হয়েছে) -->
-        <button onclick="startTimerFromSetup()" class="bg-transparent text-red-500/70 font-bold text-xl px-12 py-4 rounded-xl transition duration-150 mt-4 hover:text-red-500">
+        <!-- Start Button (Start button) - UPDATED TO ONLY SHOW TEXT (শুধুমাত্র টেক্সট দেখানোর জন্য আপডেট করা হয়েছে) -->
+        <button onclick="startTimerFromSetup()" class="bg-transparent text-red-500 font-bold text-xl p-2 transition duration-150 mt-4 hover:bg-red-500/10 active:scale-95">
             Let's do it...
         </button>
         
