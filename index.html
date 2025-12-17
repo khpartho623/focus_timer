@@ -14,7 +14,7 @@
         /* Custom CSS for Phone App Look */
         body {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            background-color: #0d0c1d; /* Deep Dark Blue for space background */
+            background-color: #0d0c1d; 
             margin: 0;
             padding: 0;
             display: flex;
@@ -22,27 +22,24 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden; /* Hide scrollbars caused by falling stars */
+            overflow: hidden; 
         }
         
-        /* ---------------------------------- */
-        /* STARFIELD ANIMATION STYLES (তারার অ্যানিমেশন) */
-        /* ---------------------------------- */
         #starfield {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1; /* Keep it behind the app container */
-            pointer-events: none; /* Ignore mouse events */
+            z-index: -1;
+            pointer-events: none;
         }
         
         .star {
             position: absolute;
             background-color: #ffffff;
             border-radius: 50%;
-            box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.4); /* Subtle glow */
+            box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.4);
             opacity: 0;
             animation-name: shoot;
             animation-iteration-count: infinite;
@@ -50,31 +47,14 @@
         }
 
         @keyframes shoot {
-            0% {
-                transform: translate(0, 0) rotate(225deg);
-                opacity: 1;
-            }
-            10% {
-                opacity: 0.8;
-            }
-            50% {
-                opacity: 0.3;
-            }
-            100% {
-                /* Travel diagonally down and right */
-                transform: translate(calc(100vw + 300px), calc(100vh + 300px)) rotate(225deg);
-                opacity: 0;
-            }
+            0% { transform: translate(0, 0) rotate(225deg); opacity: 1; }
+            10% { opacity: 0.8; }
+            50% { opacity: 0.3; }
+            100% { transform: translate(calc(100vw + 300px), calc(100vh + 300px)) rotate(225deg); opacity: 0; }
         }
-        /* ---------------------------------- */
-        /* END STARFIELD STYLES */
-        /* ---------------------------------- */
-
 
         #app {
-            /* Background changed to semi-transparent to let stars show through */
             background-color: rgba(0, 0, 0, 0.3); 
-            backdrop-filter: none; /* Removed blur for clearer star visibility */
             width: 90%; 
             max-width: 360px; 
             height: 100%;
@@ -92,7 +72,6 @@
             z-index: 1;
         }
         
-        /* Ensure inner screens take up necessary space */
         #setup-screen, #lock-screen {
             width: 100%;
             min-height: 100%;
@@ -102,23 +81,6 @@
             align-items: center;
         }
 
-        /* Specific styles for the "LOCKED" text */
-        #lock-screen h1 {
-            font-size: 1.1rem; 
-            font-weight: 500; 
-            color: #d1d5db; 
-        }
-
-        /* Specific styles for the description text */
-        #lock-message {
-            font-size: 0.85rem; 
-            color: #9ca3af; 
-            max-width: 280px; 
-            line-height: 1.4; 
-            font-weight: 400; 
-        }
-
-        /* Specific styles for the timer display */
         #timer-display {
             font-size: 5rem; 
             font-weight: 700; 
@@ -126,552 +88,226 @@
             letter-spacing: -1px; 
         }
 
-        /* Specific styles for the +1 Minute button (Used as the template) */
-        #add-minute-button {
-            border: 1px solid #ff6347; 
-            color: #ff6347;
-            padding: 0.6rem 1.8rem; 
-            border-radius: 9999px; 
-            font-size: 0.9rem; 
-            font-weight: 500; 
-            transition: background-color 0.2s;
-        }
-        #add-minute-button:hover {
-            background-color: rgba(255, 99, 71, 0.1);
-        }
-        
-        /* New style for the Gemini feature output (Removed, but keeping the block for structure) */
-        #focus-tip-output {
-            min-height: 2.5rem; 
-            transition: color 0.3s;
-        }
-        
-        /* --- Style for the always-visible Emergency Stop button (নতুন স্টাইল: সবসময় দৃশ্যমান ইমার্জেন্সি স্টপ বাটন) --- */
         #unlock-button:not(.active) {
-            /* Visually indicate it's disabled when not active */
             opacity: 0.5;
             cursor: default;
         }
 
-        /* --- Custom fix: Remove focus outline on buttons (ফিক্স: বাটন থেকে ফোকাস আউটলাইন সরানো) --- */
         button:focus, button:active {
             outline: none;
             box-shadow: none;
         }
-        /* --------------------------------------------------------------------------------- */
-
     </style>
 </head>
 <body>
 
-    <!-- Starfield Background (তারার ব্যাকগ্রাউন্ড) -->
+    <!-- Continuous Rain Audio Element (Looping Enabled) -->
+    <audio id="rain-audio" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/khpartho623/focus_timer/fc05017f1e970beb8634bbe549fcd5590c38aa7a/Rain%20white%20noise.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Starfield Background -->
     <div id="starfield"></div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        setLogLevel('Debug');
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        let firebaseConfig = {};
-        try {
-            firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        } catch (e) {
-            console.error("Firebase config parsing error:", e);
-        }
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let app, db, auth;
-
-        if (Object.keys(firebaseConfig).length > 0) {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            console.log("Firebase Initialized for App ID:", appId);
-
-            const authenticate = async () => {
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("Signed in with custom token.");
-                    } else {
-                        await signInAnonymously(auth);
-                        console.log("Signed in anonymously.");
-                    }
-                } catch (error) {
-                    console.error("Firebase Auth Error:", error);
-                }
-            };
-            authenticate();
-        } else {
-            console.warn("Firebase config not available. Running app without full persistence features.");
-        }
-    </script>
-    
-
-<div id="app" class="text-white">
-
-    <!-- Page 1: Setup Screen (Setup Screen) -->
-    <div id="setup-screen" class="p-6 flex flex-col items-center justify-center">
+    <div id="app" class="text-white">
         
-        <!-- Time Setting UI: Centralized display with Plus/Minus symbols (Shomoy set korar UI: Plus/Minus symbol soho modhyoborti display) -->
-        <div class="flex items-center justify-center mb-10">
-            
-            <!-- Minus Button (Minus button) -->
-            <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 mr-6 flex items-center justify-center font-bold" aria-label="Decrease time by 5 minutes">
-                &minus;
+        <!-- Rain Sound Toggle Button (Top Right) -->
+        <div class="absolute top-6 right-6 z-10">
+            <button id="sound-btn" onclick="toggleRain()" class="p-2 border border-white/20 rounded-full opacity-50 hover:opacity-100 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>
             </button>
+        </div>
 
-            <!-- Time Display (Shomoy display) -->
-            <div id="setup-time-setter" class="mx-auto">
-                <!-- Increased text size back to 7xl for prominence -->
-                <div id="set-time-display" class="text-7xl font-extralight text-red-500 leading-none p-2">
-                    60
-                </div>
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="p-6">
+            <div class="flex items-center justify-center mb-10">
+                <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 mr-6 font-bold">&minus;</button>
+                <div id="set-time-display" class="text-7xl font-extralight text-red-500 leading-none p-2">60</div>
+                <button onclick="plusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 ml-6 font-bold">+</button>
             </div>
-
-            <!-- Plus Button (Plus button) -->
-            <button onclick="plusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 ml-6 flex items-center justify-center font-bold" aria-label="Increase time by 5 minutes">
-                +
+            <input type="hidden" id="custom-minutes" value="60" />
+            <button onclick="startTimerFromSetup()" class="border border-red-500 bg-transparent text-red-500 font-medium text-sm rounded-full py-2 px-6 transition duration-150 mt-4 hover:bg-red-500/10 active:scale-95" style="border-color: #ff6347; font-size: 0.9rem; padding: 0.6rem 1.8rem;">
+                Let's do it...
             </button>
         </div>
 
-
-        <!-- Hidden input to pass default time to the timer logic, updated by plus/minus (Hidden input) -->
-        <input type="hidden" id="custom-minutes" value="60" min="1" />
-
-        <!-- Start Button (Start button) - UPDATED TO MATCH +1 MINUTE STYLE (সম্পূর্ণভাবে +1 Minute স্টাইল অনুসারে আপডেট করা হয়েছে) -->
-        <button onclick="startTimerFromSetup()" 
-            class="border border-red-500 bg-transparent text-red-500 font-medium text-sm rounded-full py-2 px-6 transition duration-150 mt-4 hover:bg-red-500/10 active:scale-95" 
-            style="border-color: #ff6347; font-size: 0.9rem; padding: 0.6rem 1.8rem;">
-            Let's do it...
-        </button>
-        
-    </div>
-
-    <!-- Page 2: Lock Screen (Lock Screen) -->
-    <div id="lock-screen" class="hidden p-6">
-        
-        <!-- 1. Timer Display (Timer display) -->
-        <div id="timer-display" class="text-7xl font-bold text-red-500 mb-8">
-            00:00
-        </div>
-
-        <!-- 2. LOCKED Header (LOCKED header) -->
-        <h1 class="text-xl font-medium text-gray-300 mb-1">
-            LOCKED
-        </h1>
-
-        <!-- 3. Lock Message (Lock message) -->
-        <p id="lock-message" class="text-sm text-gray-400 max-w-sm px-4 leading-relaxed mb-8">
-            Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.
-        </p>
-
-        <!-- 4. +1 Minute Button (+1 Minute button) -->
-        <button id="add-minute-button" class="timer-button mb-4" onclick="addTime(60)">
-            +1 Minute
-        </button>
-
-        <!-- 5. Emergency Stop Button (Emergency Stop button) -->
-        <!-- MODIFIED: Removed 'hidden' class and changed onclick handler to check if timer is running -->
-        <button id="unlock-button" class="text-gray-500 text-sm mt-2 hover:text-gray-300" onclick="handleEmergencyStop()">
-            Emergency Stop
-        </button>
-
-        <!-- Application Footer (Application Footer) -->
-        <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
-            <p>&copy; 2025 All rights reserved. Powered by Partho.
+        <!-- Lock Screen -->
+        <div id="lock-screen" class="hidden p-6">
+            <div id="timer-display" class="mb-8">00:00</div>
+            <h1 class="text-xl font-medium text-gray-300 mb-1">LOCKED</h1>
+            <p id="lock-message" class="text-sm text-gray-400 max-w-xs px-4 leading-relaxed mb-8">
+                Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.
             </p>
-        </footer>
+            <button id="add-minute-button" class="border border-[#ff6347] text-[#ff6347] py-2 px-6 rounded-full text-sm font-medium mb-4 hover:bg-[#ff6347]/10" onclick="addTime(60)">
+                +1 Minute
+            </button>
+            <button id="unlock-button" class="text-gray-500 text-sm mt-2 hover:text-gray-300" onclick="handleEmergencyStop()">
+                Emergency Stop
+            </button>
+            <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
+                <p>&copy; 2025 All rights reserved. Powered by Partho.</p>
+            </footer>
+        </div>
     </div>
-</div>
 
     <script>
-        // --- Timer State and Logic (Timer-er obostha o tar bebohar) ---
+        // --- Elements ---
         const setupScreen = document.getElementById('setup-screen');
         const lockScreen = document.getElementById('lock-screen');
         const timerDisplay = document.getElementById('timer-display');
         const lockMessage = document.getElementById('lock-message');
         const addMinuteButton = document.getElementById('add-minute-button');
-        const unlockButton = document.getElementById('unlock-button'); // Added reference for the unlock button
-        const customMinutesInput = document.getElementById('custom-minutes'); // Hidden input
-        
-        // New elements for tap-to-set (Shomoy set korar notun element)
+        const unlockButton = document.getElementById('unlock-button');
+        const customMinutesInput = document.getElementById('custom-minutes');
         const setTimeDisplay = document.getElementById('set-time-display');
-        const setupTimeSetter = document.getElementById('setup-time-setter');
-        
+        const rainAudio = document.getElementById('rain-audio');
+        const soundBtn = document.getElementById('sound-btn');
+
+        // --- State ---
         let intervalId = null;
-        let timeRemaining = 0; // Time in seconds (Shomoy second-e)
-        let wakeLock = null; // Variable to hold the screen wake lock (Screen wake lock dhorar jonno variable)
-        
-        const MIN_TIME = 1; // 1 minute (1 minute)
-        const MAX_TIME = 300; // 300 minutes (5 hours) (300 minute)
-        let currentSetMinutes = 60; // Default minutes set to 60 (Default 60 minute set kora)
-
-        // Initialize Tone.js components for sound (Sound-er jonno Tone.js initialize kora)
+        let timeRemaining = 0;
+        let wakeLock = null;
+        let currentSetMinutes = 60;
         let synth = null;
-        
-        // Starfield elements
-        const starfield = document.getElementById('starfield');
-        const numStars = 20; // Number of shooting stars (Koto gulo tara khosbe)
+        let isRainPlaying = false;
 
-        /**
-         * Initializes the Tone.js synth if not already initialized. (Tone.js initialize kora)
-         */
+        // --- Continuous Rain Logic ---
+        function toggleRain() {
+            if (isRainPlaying) {
+                rainAudio.pause();
+                soundBtn.style.color = "white";
+                soundBtn.style.opacity = "0.5";
+            } else {
+                // Audio shuru korar por eti continuously loop hobe jotokkhon na pause kora hoy
+                rainAudio.play().catch(error => {
+                    console.log("Audio interact chara browser block koreche.");
+                });
+                soundBtn.style.color = "#ef4444";
+                soundBtn.style.opacity = "1";
+            }
+            isRainPlaying = !isRainPlaying;
+        }
+
+        // --- Tone.js & Starfield ---
         async function initializeSynth() {
             if (!synth) {
                 try {
-                    // Start the AudioContext
                     await Tone.start();
-                    // Create a simple synth
                     synth = new Tone.Synth({
                         oscillator: { type: "sine" },
                         envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 }
                     }).toDestination();
-                    console.log("AudioContext is running and Synth is initialized.");
-                } catch (e) {
-                    console.error("Error initializing Tone.js:", e);
-                }
+                } catch (e) { console.error(e); }
             }
         }
 
-        /**
-         * Plays the sound for starting a focus session (Upward C5, E5, G5). (Focus session shuru korar sound bajano)
-         */
         function playFocusStartSound() {
-            if (!synth || Tone.context.state !== 'running') {
-                console.warn("Synth not ready to play start sound.");
-                return;
-            }
-
-            const notes = ["C5", "E5", "G5"]; // Upward (Energetic start)
-            const duration = "8n";
-            const delay = 0.2; 
-
-            let time = Tone.now();
-            synth.triggerAttackRelease(notes[0], duration, time);
-            synth.triggerAttackRelease(notes[1], duration, time + delay);
-            synth.triggerAttackRelease(notes[2], duration, time + delay * 2);
+            if (!synth) return;
+            const notes = ["C5", "E5", "G5"];
+            let now = Tone.now();
+            synth.triggerAttackRelease(notes[0], "8n", now);
+            synth.triggerAttackRelease(notes[1], "8n", now + 0.2);
+            synth.triggerAttackRelease(notes[2], "8n", now + 0.4);
         }
-        
-        /**
-         * Plays the sound for session completion (quadruple 'tung tung'). (Session sesh hobar sound, char bar)
-         */
+
         function playFocusEndSequence() {
-            if (!synth || Tone.context.state !== 'running') {
-                console.warn("Synth not ready to play end sound.");
-                return;
+            for(let i=0; i<4; i++) {
+                setTimeout(playFocusStartSound, i * 1000);
             }
-
-            // Play 1st (Prothom bar)
-            playFocusStartSound();
-
-            // Play 2nd after 1s (Ditiyo bar 1s por)
-            setTimeout(() => {
-                playFocusStartSound();
-            }, 1000); 
-            
-            // Play 3rd after 2s (Tritiyo bar 2s por)
-            setTimeout(() => {
-                playFocusStartSound();
-            }, 2000);
-            
-            // Play 4th after 3s (Choturtho bar 3s por)
-            setTimeout(() => {
-                playFocusStartSound();
-            }, 3000);
         }
 
-        /**
-         * Creates and initializes the shooting star animations. (Shooting star animation toiri kora)
-         */
         function createStars() {
-            if (!starfield) return;
-
-            // Clear previous stars if any (Jodi kono aager tara thake, muche dewa)
-            starfield.innerHTML = ''; 
-
-            for (let i = 0; i < numStars; i++) {
+            const starfield = document.getElementById('starfield');
+            for (let i = 0; i < 20; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
-
-                // Random size (0.5px to 2px)
-                const size = Math.random() * 1.5 + 0.5; 
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-
-                // Random position (Mostly top-left quadrant for diagonal travel)
-                // Using document.documentElement.clientWidth/Height for compatibility
-                const clientW = document.documentElement.clientWidth;
-                const clientH = document.documentElement.clientHeight;
-                
-                const startX = Math.random() * clientW * 1.5 - (clientW * 0.5); 
-                const startY = Math.random() * clientH * 1.5 - (clientH * 0.5); 
-                
-                // Adjust position to ensure they start off-screen slightly
-                star.style.left = `${startX}px`;
-                star.style.top = `${startY}px`;
-
-                // Random animation duration (3s to 8s) and delay
-                const duration = Math.random() * 5 + 3; 
-                const delay = Math.random() * 20; 
-                
-                star.style.animationDuration = `${duration}s`;
-                star.style.animationDelay = `${delay}s`;
-
+                const size = Math.random() * 1.5 + 0.5;
+                star.style.width = star.style.height = `${size}px`;
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.animationDuration = `${Math.random() * 5 + 3}s`;
+                star.style.animationDelay = `${Math.random() * 10}s`;
                 starfield.appendChild(star);
             }
         }
 
-
-        // --- Wake Lock Functions (Wake Lock Functions) ---
-        const requestWakeLock = async () => {
-            if ('wakeLock' in navigator) {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Screen Wake Lock acquired');
-                    wakeLock.addEventListener('release', () => {
-                        console.log('Screen Wake Lock released');
-                    });
-                } catch (err) {
-                    console.error(`${err.name}, ${err.message}`);
-                }
-            }
-        };
-
-        const releaseWakeLock = () => {
-            if (wakeLock) {
-                wakeLock.release()
-                    .then(() => {
-                        wakeLock = null;
-                    });
-            }
-        };
-        
-        // --- Time Setter Logic (Shomoy set korar logic) ---
-
-        /**
-         * Updates the display element and the hidden input for the set time. (Shomoy display o hidden input update kora)
-         */
+        // --- Timer Logic ---
         function updateSetTimeDisplay() {
             setTimeDisplay.textContent = currentSetMinutes;
-            customMinutesInput.value = currentSetMinutes; // Sync value for start logic
+            customMinutesInput.value = currentSetMinutes;
         }
 
-        /**
-         * Increments the focus time by the specified minutes. (Shomoy barano)
-         * @param {number} minutes
-         */
-        function plusTime(minutes) {
-            currentSetMinutes += minutes;
-            if (currentSetMinutes > MAX_TIME) {
-                currentSetMinutes = MAX_TIME;
-            }
+        function plusTime(m) {
+            currentSetMinutes = Math.min(300, currentSetMinutes + m);
             updateSetTimeDisplay();
         }
 
-        /**
-         * Decrements the focus time by the specified minutes. (Shomoy komano)
-         * @param {number} minutes
-         */
-        function minusTime(minutes) {
-            currentSetMinutes -= minutes;
-            if (currentSetMinutes < MIN_TIME) {
-                currentSetMinutes = MIN_TIME;
-            }
+        function minusTime(m) {
+            currentSetMinutes = Math.max(1, currentSetMinutes - m);
             updateSetTimeDisplay();
         }
 
-
-        // --- Timer Core Logic (Timer-er mul logic) ---
-        
-        /**
-         * Formats seconds into MM:SS string. (Second-ke MM:SS string-e rupantor kora)
-         * @param {number} totalSeconds
-         * @returns {string}
-         */
-        function formatTime(totalSeconds) {
-            const minutes = Math.floor(totalSeconds / 60);
-            const seconds = totalSeconds % 60;
-            const pad = (num) => String(num).padStart(2, '0');
-            return `${pad(minutes)}:${pad(seconds)}`;
+        function formatTime(s) {
+            const min = Math.floor(s / 60);
+            const sec = s % 60;
+            return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
         }
 
-        /**
-         * Updates the timer display on the lock screen. (Timer display update kora)
-         */
         function updateDisplay() {
-            if (timeRemaining < 0) timeRemaining = 0;
             timerDisplay.textContent = formatTime(timeRemaining);
         }
-        
-        /**
-         * Toggles the visual state of the Emergency Stop button.
-         * @param {boolean} isActive
-         */
-        function updateEmergencyStopState(isActive) {
-            if (isActive) {
-                unlockButton.classList.add('active');
-            } else {
-                unlockButton.classList.remove('active');
-            }
-        }
 
-
-        /**
-         * Main timer countdown logic. (Mul countdown logic)
-         */
-        function countdown() {
-            if (timeRemaining <= 0) {
-                stopTimer();
-            } else {
-                timeRemaining--;
-                updateDisplay();
-            }
-        }
-
-        /**
-         * Starts the timer and switches to the lock screen. (Timer shuru kora o lock screen-e jawa)
-         */
-        function startTimer() {
-            if (timeRemaining <= 0) return;
-
-            // Trigger sound at the start (Upward C5, E5, G5) (Shurute sound bajano)
-            playFocusStartSound(); 
-
-            // Request screen wake lock (Screen wake lock anurodh kora)
-            requestWakeLock();
-
-            // Page transition: Hide setup, show lock screen (Page poriborton)
+        async function startTimerFromSetup() {
+            await initializeSynth();
+            timeRemaining = parseInt(customMinutesInput.value) * 60;
             setupScreen.classList.add('hidden');
             lockScreen.classList.remove('hidden');
-
-            // Set emergency stop to active state
-            updateEmergencyStopState(true);
-
-            // Reset messages and styling (Message o styling reset kora)
-            lockMessage.textContent = 'Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.';
-            addMinuteButton.classList.remove('hidden');
-            // document.getElementById('unlock-button').classList.remove('hidden'); // REMOVED: Button is now always visible
-            timerDisplay.classList.remove('text-green-500', 'text-gray-400');
-            timerDisplay.classList.add('text-red-500');
-
-            // Start the interval (Interval shuru kora)
-            intervalId = setInterval(countdown, 1000);
+            playFocusStartSound();
+            unlockButton.classList.add('active');
+            intervalId = setInterval(() => {
+                if (timeRemaining <= 0) {
+                    stopTimer();
+                } else {
+                    timeRemaining--;
+                    updateDisplay();
+                }
+            }, 1000);
             updateDisplay();
         }
 
-        /**
-         * Stops the timer and shows the result/switches back to setup. (Timer thamiye result dekhano)
-         * @param {boolean} emergencyStop
-         */
-        function stopTimer(emergencyStop = false) {
+        function stopTimer(emergency = false) {
             clearInterval(intervalId);
             intervalId = null;
-
-            // Set emergency stop to inactive state
-            updateEmergencyStopState(false);
-
-            // Release screen wake lock (Screen wake lock release kora)
-            releaseWakeLock();
-
-            if (emergencyStop) {
-                // Emergency stop - NO SOUND (Joruri thama - kono shobdo nei)
-                lockMessage.textContent = 'Emergency stop initiated. Click below to start a new session.';
-                timerDisplay.textContent = '00:00';
-                timerDisplay.classList.remove('text-red-500', 'text-green-500');
-                timerDisplay.classList.add('text-gray-400');
+            unlockButton.classList.remove('active');
+            if (emergency) {
+                lockMessage.textContent = 'Emergency stop initiated. Click below to reset.';
+                timerDisplay.classList.replace('text-red-500', 'text-gray-400');
             } else {
-                // Normal completion - PLAY QUADRUPLE START SOUND (Shadharon shesh - char bar sound bajano)
-                playFocusEndSequence(); 
-                lockMessage.textContent = "Time's up! Click anywhere to start a new session.";
-                timerDisplay.textContent = '00:00';
-                timerDisplay.classList.remove('text-red-500', 'text-gray-400');
-                timerDisplay.classList.add('text-green-500'); // Green color for completion (Shesh hobar jonno shobuj rong)
+                playFocusEndSequence();
+                lockMessage.textContent = "Time's up! Click anywhere to reset.";
+                timerDisplay.classList.replace('text-red-500', 'text-green-500');
             }
-
-            // Hide action buttons when timer stops (Timer thamle button gulo lukono)
             addMinuteButton.classList.add('hidden');
-            // document.getElementById('unlock-button').classList.add('hidden'); // REMOVED: Button is now always visible
-
-
-            // Allow user to click anywhere on the lock screen to return to setup (Click korle setup-e phire jawa)
-            lockScreen.onclick = returnToSetup;
+            lockScreen.onclick = () => {
+                lockScreen.onclick = null;
+                lockScreen.classList.add('hidden');
+                setupScreen.classList.remove('hidden');
+                addMinuteButton.classList.remove('hidden');
+                timerDisplay.classList.remove('text-green-500', 'text-gray-400');
+                timerDisplay.classList.add('text-red-500');
+            };
         }
-        
-        /**
-         * Handles the Emergency Stop action. (Emergency Stop-er kaj kora)
-         * Only executes stopTimer(true) if the timer is currently running.
-         */
+
         function handleEmergencyStop() {
-            if (intervalId) {
-                stopTimer(true);
-            } else {
-                // If the timer is not running, the click is ignored (as requested).
-                console.log("Emergency Stop ignored: Timer is not running.");
-            }
+            if (intervalId) stopTimer(true);
         }
 
-
-        /**
-         * Adds time to the current countdown. (Countdown-e shomoy jog kora)
-         * @param {number} seconds
-         */
-        function addTime(seconds) {
-            timeRemaining += seconds;
+        function addTime(s) {
+            timeRemaining += s;
             updateDisplay();
         }
 
-        /**
-         * Gets time from input and starts the timer. (Input theke shomoy niye timer shuru kora)
-         */
-        async function startTimerFromSetup() {
-            // Read value from hidden input which is synced by the button logic. (Hidden input theke value pora)
-            const minutes = parseInt(customMinutesInput.value, 10); 
-            
-            if (isNaN(minutes) || minutes <= 0) {
-                console.error("Invalid time set.");
-                return;
-            }
-            
-            // Critical fix: Initialize AudioContext right on the Start button click (Start button click-e AudioContext initialize kora)
-            await initializeSynth();
-
-            timeRemaining = minutes * 60;
-            startTimer();
-        }
-
-        /**
-         * Returns the view to the setup screen. (Setup screen-e phire jawa)
-         */
-        function returnToSetup() {
-            lockScreen.onclick = null; // Remove the listener (Listener shoriye dewa)
-            lockScreen.classList.add('hidden');
-            setupScreen.classList.remove('hidden');
-            currentSetMinutes = 60; // Reset setter state to default 60 (Setter obostha reset kora)
-            timeRemaining = 0; // Reset time (Shomoy reset kora)
-            updateSetTimeDisplay(); // Update setter display (Setter display update kora)
-            updateDisplay(); // Ensure lock screen display is reset (Lock screen display reset ensure kora)
-        }
-
-        // --- Initial Setup (Runs immediately after script loads) (Prothomik setup) ---
-        
-        // Initialize the starfield and display once the DOM is fully loaded (DOM load howar por starfield o display initialize kora)
-        document.addEventListener('DOMContentLoaded', () => {
-             try {
-                 createStars();
-                 // Ensure initial display is set and Emergency Stop is inactive.
-                 updateSetTimeDisplay(); 
-                 updateEmergencyStopState(false);
-                 console.log("Focus Lock Timer script initialized and ready.");
-             } catch(e) {
-                 console.error("Initialization Error:", e);
-             }
-        });
-
+        document.addEventListener('DOMContentLoaded', createStars);
     </script>
 </body>
 </html>
