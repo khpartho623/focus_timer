@@ -14,7 +14,7 @@
         /* Custom CSS for Phone App Look */
         body {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            background-color: #0d0c1d; 
+            background-color: #0d0c1d; /* Original Dark Blueish Black */
             margin: 0;
             padding: 0;
             display: flex;
@@ -53,6 +53,7 @@
             100% { transform: translate(calc(100vw + 300px), calc(100vh + 300px)) rotate(225deg); opacity: 0; }
         }
 
+        /* Original Black Box Container */
         #app {
             background-color: rgba(0, 0, 0, 0.3); 
             width: 90%; 
@@ -69,7 +70,26 @@
             text-align: center;
             margin: 20px; 
             position: relative; 
-            z-index: 1;
+            z-index: 10;
+        }
+
+        /* Dimming Overlay for the container */
+        #dim-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); 
+            border-radius: 2rem;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #dim-overlay.active {
+            opacity: 1;
         }
         
         #setup-screen, #lock-screen {
@@ -79,6 +99,7 @@
             flex-direction: column;
             justify-content: center; 
             align-items: center;
+            position: relative;
         }
 
         #timer-display {
@@ -86,6 +107,9 @@
             font-weight: 700; 
             color: #ef4444; 
             letter-spacing: -1px; 
+            position: relative;
+            z-index: 30; 
+            transition: transform 0.3s ease;
         }
 
         #unlock-button:not(.active) {
@@ -97,11 +121,19 @@
             outline: none;
             box-shadow: none;
         }
+
+        .dimmable-content {
+            transition: opacity 0.5s ease;
+        }
+        
+        .dimmed .dimmable-content {
+            opacity: 0.2; 
+        }
     </style>
 </head>
 <body>
 
-    <!-- Continuous Rain Audio Element (Looping Enabled) -->
+    <!-- Continuous Rain Audio Element -->
     <audio id="rain-audio" loop preload="auto">
         <source src="https://raw.githubusercontent.com/khpartho623/focus_timer/fc05017f1e970beb8634bbe549fcd5590c38aa7a/Rain%20white%20noise.mp3" type="audio/mpeg">
     </audio>
@@ -109,17 +141,27 @@
     <!-- Starfield Background -->
     <div id="starfield"></div>
 
-    <div id="app" class="text-white">
+    <div id="app" class="text-white overflow-hidden">
         
-        <!-- Rain Sound Toggle Button (Top Right) -->
-        <div class="absolute top-6 right-6 z-10">
-            <button id="sound-btn" onclick="toggleRain()" class="p-2 border border-white/20 rounded-full opacity-50 hover:opacity-100 transition-all">
+        <!-- Dim Overlay -->
+        <div id="dim-overlay"></div>
+
+        <!-- Dim Mode Button (Top Left) - 40% Opacity -->
+        <div class="absolute top-6 left-6 z-50">
+            <button id="dim-btn" onclick="toggleDim()" class="p-2 border border-white/20 rounded-full opacity-40 hover:opacity-100 transition-all text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+        </div>
+
+        <!-- Rain Sound Toggle Button (Top Right) - 40% Opacity -->
+        <div class="absolute top-6 right-6 z-50">
+            <button id="sound-btn" onclick="toggleRain()" class="p-2 border border-white/20 rounded-full opacity-40 hover:opacity-100 transition-all text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>
             </button>
         </div>
 
         <!-- Setup Screen -->
-        <div id="setup-screen" class="p-6">
+        <div id="setup-screen" class="p-6 dimmable-content">
             <div class="flex items-center justify-center mb-10">
                 <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 mr-6 font-bold">&minus;</button>
                 <div id="set-time-display" class="text-7xl font-extralight text-red-500 leading-none p-2">60</div>
@@ -134,24 +176,26 @@
         <!-- Lock Screen -->
         <div id="lock-screen" class="hidden p-6">
             <div id="timer-display" class="mb-8">00:00</div>
-            <h1 class="text-xl font-medium text-gray-300 mb-1">LOCKED</h1>
-            <p id="lock-message" class="text-sm text-gray-400 max-w-xs px-4 leading-relaxed mb-8">
-                Your phone usage and notifications are restricted during this session. The lock will automatically release when the timer ends.
-            </p>
-            <button id="add-minute-button" class="border border-[#ff6347] text-[#ff6347] py-2 px-6 rounded-full text-sm font-medium mb-4 hover:bg-[#ff6347]/10" onclick="addTime(60)">
-                +1 Minute
-            </button>
-            <button id="unlock-button" class="text-gray-500 text-sm mt-2 hover:text-gray-300" onclick="handleEmergencyStop()">
-                Emergency Stop
-            </button>
-            <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
-                <p>&copy; 2025 All rights reserved. Powered by Partho.</p>
-            </footer>
+            
+            <div class="dimmable-content w-full flex flex-col items-center">
+                <h1 class="text-xl font-medium text-gray-300 mb-1">LOCKED</h1>
+                <p id="lock-message" class="text-sm text-gray-400 max-w-xs px-4 leading-relaxed mb-8">
+                    Your phone usage and notifications are restricted during this session.
+                </p>
+                <button id="add-minute-button" class="border border-[#ff6347] text-[#ff6347] py-2 px-6 rounded-full text-sm font-medium mb-4 hover:bg-[#ff6347]/10" onclick="addTime(60)">
+                    +1 Minute
+                </button>
+                <button id="unlock-button" class="text-gray-500 text-sm mt-2 hover:text-gray-300" onclick="handleEmergencyStop()">
+                    Emergency Stop
+                </button>
+                <footer class="text-xs text-gray-500 text-center mt-12 w-full px-4">
+                    <p>&copy; 2025 All rights reserved. Powered by Partho.</p>
+                </footer>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- Elements ---
         const setupScreen = document.getElementById('setup-screen');
         const lockScreen = document.getElementById('lock-screen');
         const timerDisplay = document.getElementById('timer-display');
@@ -162,33 +206,45 @@
         const setTimeDisplay = document.getElementById('set-time-display');
         const rainAudio = document.getElementById('rain-audio');
         const soundBtn = document.getElementById('sound-btn');
+        const dimBtn = document.getElementById('dim-btn');
+        const dimOverlay = document.getElementById('dim-overlay');
+        const appContainer = document.getElementById('app');
 
-        // --- State ---
         let intervalId = null;
         let timeRemaining = 0;
-        let wakeLock = null;
         let currentSetMinutes = 60;
         let synth = null;
         let isRainPlaying = false;
+        let isDimmed = false;
 
-        // --- Continuous Rain Logic ---
+        function toggleDim() {
+            isDimmed = !isDimmed;
+            if (isDimmed) {
+                dimOverlay.classList.add('active');
+                appContainer.classList.add('dimmed');
+                dimBtn.style.color = "#ef4444"; 
+                dimBtn.style.opacity = "1";
+            } else {
+                dimOverlay.classList.remove('active');
+                appContainer.classList.remove('dimmed');
+                dimBtn.style.color = "white";
+                dimBtn.style.opacity = "0.4";
+            }
+        }
+
         function toggleRain() {
             if (isRainPlaying) {
                 rainAudio.pause();
                 soundBtn.style.color = "white";
-                soundBtn.style.opacity = "0.5";
+                soundBtn.style.opacity = "0.4";
             } else {
-                // Audio shuru korar por eti continuously loop hobe jotokkhon na pause kora hoy
-                rainAudio.play().catch(error => {
-                    console.log("Audio interact chara browser block koreche.");
-                });
+                rainAudio.play().catch(e => console.log("Audio interaction blocked"));
                 soundBtn.style.color = "#ef4444";
                 soundBtn.style.opacity = "1";
             }
             isRainPlaying = !isRainPlaying;
         }
 
-        // --- Tone.js & Starfield ---
         async function initializeSynth() {
             if (!synth) {
                 try {
@@ -231,7 +287,6 @@
             }
         }
 
-        // --- Timer Logic ---
         function updateSetTimeDisplay() {
             setTimeDisplay.textContent = currentSetMinutes;
             customMinutesInput.value = currentSetMinutes;
@@ -281,11 +336,11 @@
             unlockButton.classList.remove('active');
             if (emergency) {
                 lockMessage.textContent = 'Emergency stop initiated. Click below to reset.';
-                timerDisplay.classList.replace('text-red-500', 'text-gray-400');
+                timerDisplay.style.color = "#9ca3af";
             } else {
                 playFocusEndSequence();
                 lockMessage.textContent = "Time's up! Click anywhere to reset.";
-                timerDisplay.classList.replace('text-red-500', 'text-green-500');
+                timerDisplay.style.color = "#22c55e";
             }
             addMinuteButton.classList.add('hidden');
             lockScreen.onclick = () => {
@@ -293,8 +348,7 @@
                 lockScreen.classList.add('hidden');
                 setupScreen.classList.remove('hidden');
                 addMinuteButton.classList.remove('hidden');
-                timerDisplay.classList.remove('text-green-500', 'text-gray-400');
-                timerDisplay.classList.add('text-red-500');
+                timerDisplay.style.color = "#ef4444";
             };
         }
 
