@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Focus Lock Timer</title>
     
+    <!-- Google Fonts: Varela Round -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tone.js library for sound effects -->
@@ -13,7 +18,7 @@
     <style>
         /* Custom CSS for Phone App Look */
         body {
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            font-family: 'Varela Round', sans-serif;
             background-color: #0d0c1d; 
             margin: 0;
             padding: 0;
@@ -53,7 +58,6 @@
             100% { transform: translate(calc(100vw + 300px), calc(100vh + 300px)) rotate(225deg); opacity: 0; }
         }
 
-        /* Original Black Box Container */
         #app {
             background-color: rgba(0, 0, 0, 0.3); 
             width: 90%; 
@@ -73,7 +77,6 @@
             z-index: 10;
         }
 
-        /* Dimming Overlay for the container */
         #dim-overlay {
             position: absolute;
             top: 0;
@@ -105,7 +108,7 @@
 
         #timer-display {
             font-size: 6.5rem; 
-            font-weight: 800; 
+            font-weight: 400; /* Varela Round only has 400 */
             color: #ef4444; 
             letter-spacing: -3px; 
             position: relative;
@@ -114,11 +117,7 @@
             margin-top: auto;
             margin-bottom: 1.5rem;
             line-height: 1;
-        }
-
-        #unlock-button:not(.active) {
-            opacity: 0.5;
-            cursor: default;
+            font-family: 'Varela Round', sans-serif;
         }
 
         button:focus, button:active {
@@ -142,7 +141,6 @@
             margin-bottom: auto;
         }
 
-        /* Control Button Base Opacity */
         .control-btn {
             opacity: 0.4;
             transition: all 0.5s ease;
@@ -152,13 +150,17 @@
             opacity: 1;
         }
 
-        /* Dim Mode state for control buttons */
         .dimmed-controls .control-btn {
-            opacity: 0.2 !important; /* Forces 20% brightness in Dim Mode */
+            opacity: 0.2 !important;
         }
         
         .dimmed-controls .control-btn:hover {
-            opacity: 0.5 !important; /* Slight visibility on hover during dim mode */
+            opacity: 0.5 !important;
+        }
+        
+        /* Apply font to all elements for consistency */
+        * {
+            font-family: 'Varela Round', sans-serif;
         }
     </style>
 </head>
@@ -192,9 +194,9 @@
         <!-- Setup Screen -->
         <div id="setup-screen" class="p-6 dimmable-content">
             <div class="flex items-center justify-center mb-10">
-                <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 mr-6 font-bold">&minus;</button>
-                <div id="set-time-display" class="text-8xl font-thin text-red-500 leading-none p-2 tracking-tighter">60</div>
-                <button onclick="plusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 ml-6 font-bold">+</button>
+                <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 mr-6">&minus;</button>
+                <div id="set-time-display" class="text-8xl font-normal text-red-500 leading-none p-2 tracking-tighter">60</div>
+                <button onclick="plusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 ml-6">+</button>
             </div>
             <input type="hidden" id="custom-minutes" value="60" />
             <button onclick="startTimerFromSetup()" class="border border-red-500 bg-transparent text-red-500 font-medium text-sm rounded-full py-2 px-8 transition duration-150 mt-4 hover:bg-red-500/10 active:scale-95">
@@ -208,18 +210,476 @@
             <div id="timer-display">00:00</div>
             
             <div id="lock-screen-content" class="dimmable-content w-full flex flex-col items-center">
-                <h1 class="text-lg font-bold tracking-[0.2em] text-gray-400 mb-1">LOCKED</h1>
+                <h1 class="text-lg font-normal tracking-[0.2em] text-gray-400 mb-1">LOCKED</h1>
                 <p id="lock-message" class="text-xs text-gray-500 max-w-xs px-4 leading-relaxed mb-10">
                     Focus on your task. No distractions allowed.
                 </p>
                 <button id="add-minute-button" class="border border-[#ff6347]/50 text-[#ff6347] py-2 px-8 rounded-full text-xs font-semibold mb-5 hover:bg-[#ff6347]/10 transition-all" onclick="addTime(60)">
                     +1 Minute
                 </button>
-                <button id="unlock-button" class="text-gray-600 text-[10px] uppercase tracking-widest hover:text-gray-400" onclick="handleEmergencyStop()">
-                    Emergency Stop
-                </button>
+                
+                <div class="flex gap-4 items-center mt-2">
+                    <button id="pause-button" class="text-gray-500 text-[10px] uppercase tracking-widest hover:text-gray-300 transition-colors" onclick="togglePause()">
+                        Pause
+                    </button>
+                </div>
+
                 <footer class="text-[9px] text-gray-600 uppercase tracking-widest mt-12 w-full px-4">
-                    <p>Powered by Partho</p>
+                    <p><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Lock Timer</title>
+    
+    <!-- Google Fonts: Varela Round -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js library for sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        /* Custom CSS for Phone App Look */
+        body {
+            font-family: 'Varela Round', sans-serif;
+            background-color: #0d0c1d; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; 
+        }
+        
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.4);
+            opacity: 0;
+            animation-name: shoot;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        @keyframes shoot {
+            0% { transform: translate(0, 0) rotate(225deg); opacity: 1; }
+            10% { opacity: 0.8; }
+            50% { opacity: 0.3; }
+            100% { transform: translate(calc(100vw + 300px), calc(100vh + 300px)) rotate(225deg); opacity: 0; }
+        }
+
+        #app {
+            background-color: rgba(0, 0, 0, 0.3); 
+            width: 90%; 
+            max-width: 360px; 
+            height: 100%;
+            max-height: 780px; 
+            min-height: 600px; 
+            border-radius: 2rem; 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7); 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin: 20px; 
+            position: relative; 
+            z-index: 10;
+        }
+
+        #dim-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); 
+            border-radius: 2rem;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #dim-overlay.active {
+            opacity: 1;
+        }
+        
+        #setup-screen, #lock-screen {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center;
+            position: relative;
+        }
+
+        #timer-display {
+            font-size: 6.5rem; 
+            font-weight: 400; /* Varela Round only has 400 */
+            color: #ef4444; 
+            letter-spacing: -3px; 
+            position: relative;
+            z-index: 30; 
+            transition: transform 0.3s ease;
+            margin-top: auto;
+            margin-bottom: 1.5rem;
+            line-height: 1;
+            font-family: 'Varela Round', sans-serif;
+        }
+
+        button:focus, button:active {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .dimmable-content {
+            transition: opacity 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .dimmed .dimmable-content {
+            opacity: 0.2; 
+        }
+
+        #lock-screen-content {
+            margin-bottom: auto;
+        }
+
+        .control-btn {
+            opacity: 0.4;
+            transition: all 0.5s ease;
+        }
+
+        .control-btn:hover {
+            opacity: 1;
+        }
+
+        .dimmed-controls .control-btn {
+            opacity: 0.2 !important;
+        }
+        
+        .dimmed-controls .control-btn:hover {
+            opacity: 0.5 !important;
+        }
+        
+        /* Apply font to all elements for consistency */
+        * {
+            font-family: 'Varela Round', sans-serif;
+        }
+    </style>
+</head>
+<body id="main-body">
+
+    <audio id="rain-audio" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/khpartho623/focus_timer/fc05017f1e970beb8634bbe549fcd5590c38aa7a/Rain%20white%20noise.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="starfield"></div>
+
+    <div id="app" class="text-white overflow-hidden">
+        
+        <!-- Dim Overlay -->
+        <div id="dim-overlay"></div>
+
+        <!-- Dim Mode Button (Top Left) -->
+        <div class="absolute top-6 left-6 z-50">
+            <button id="dim-btn" onclick="toggleDim()" class="control-btn p-2 border border-white/20 rounded-full text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+        </div>
+
+        <!-- Rain Sound Toggle Button (Top Right) -->
+        <div class="absolute top-6 right-6 z-50">
+            <button id="sound-btn" onclick="toggleRain()" class="control-btn p-2 border border-white/20 rounded-full text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>
+            </button>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="p-6 dimmable-content">
+            <div class="flex items-center justify-center mb-10">
+                <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 mr-6">&minus;</button>
+                <div id="set-time-display" class="text-8xl font-normal text-red-500 leading-none p-2 tracking-tighter">60</div>
+                <button onclick="plusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 ml-6">+</button>
+            </div>
+            <input type="hidden" id="custom-minutes" value="60" />
+            <button onclick="startTimerFromSetup()" class="border border-red-500 bg-transparent text-red-500 font-medium text-sm rounded-full py-2 px-8 transition duration-150 mt-4 hover:bg-red-500/10 active:scale-95">
+                Let's do it...
+            </button>
+        </div>
+
+        <!-- Lock Screen -->
+        <div id="lock-screen" class="hidden p-6">
+            <!-- Large Main Timer -->
+            <div id="timer-display">00:00</div>
+            
+            <div id="lock-screen-content" class="dimmable-content w-full flex flex-col items-center">
+                <h1 class="text-lg font-normal tracking-[0.2em] text-gray-400 mb-1">LOCKED</h1>
+                <p id="lock-message" class="text-xs text-gray-500 max-w-xs px-4 leading-relaxed mb-10">
+                    Focus on your task. No distractions allowed.
+                </p>
+                <button id="add-minute-button" class="border border-[#ff6347]/50 text-[#ff6347] py-2 px-8 rounded-full text-xs font-semibold mb-5 hover:bg-[#ff6347]/10 transition-all" onclick="addTime(60)">
+                    +1 Minute
+                </button>
+                
+                <div class="flex gap-4 items-center mt-2">
+                    <button id="pause-button" class="text-gray-500 text-[10px] uppercase tracking-widest hover:text-gray-300 transition-colors" onclick="togglePause()">
+                        Pause
+                    </button>
+                </div>
+
+                <footer class="text-[9px] text-gray-600 uppercase tracking-widest mt-12 w-full px-4">
+                    <p><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Lock Timer</title>
+    
+    <!-- Google Fonts: Varela Round -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js library for sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        /* Custom CSS for Phone App Look */
+        body {
+            font-family: 'Varela Round', sans-serif;
+            background-color: #0d0c1d; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; 
+        }
+        
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.4);
+            opacity: 0;
+            animation-name: shoot;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        @keyframes shoot {
+            0% { transform: translate(0, 0) rotate(225deg); opacity: 1; }
+            10% { opacity: 0.8; }
+            50% { opacity: 0.3; }
+            100% { transform: translate(calc(100vw + 300px), calc(100vh + 300px)) rotate(225deg); opacity: 0; }
+        }
+
+        #app {
+            background-color: rgba(0, 0, 0, 0.3); 
+            width: 90%; 
+            max-width: 360px; 
+            height: 100%;
+            max-height: 780px; 
+            min-height: 600px; 
+            border-radius: 2rem; 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7); 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin: 20px; 
+            position: relative; 
+            z-index: 10;
+        }
+
+        #dim-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); 
+            border-radius: 2rem;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #dim-overlay.active {
+            opacity: 1;
+        }
+        
+        #setup-screen, #lock-screen {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center;
+            position: relative;
+        }
+
+        #timer-display {
+            font-size: 6.5rem; 
+            font-weight: 400; /* Varela Round only has 400 */
+            color: #ef4444; 
+            letter-spacing: -3px; 
+            position: relative;
+            z-index: 30; 
+            transition: transform 0.3s ease;
+            margin-top: auto;
+            margin-bottom: 1.5rem;
+            line-height: 1;
+            font-family: 'Varela Round', sans-serif;
+        }
+
+        button:focus, button:active {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .dimmable-content {
+            transition: opacity 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .dimmed .dimmable-content {
+            opacity: 0.2; 
+        }
+
+        #lock-screen-content {
+            margin-bottom: auto;
+        }
+
+        .control-btn {
+            opacity: 0.4;
+            transition: all 0.5s ease;
+        }
+
+        .control-btn:hover {
+            opacity: 1;
+        }
+
+        .dimmed-controls .control-btn {
+            opacity: 0.2 !important;
+        }
+        
+        .dimmed-controls .control-btn:hover {
+            opacity: 0.5 !important;
+        }
+        
+        /* Apply font to all elements for consistency */
+        * {
+            font-family: 'Varela Round', sans-serif;
+        }
+    </style>
+</head>
+<body id="main-body">
+
+    <audio id="rain-audio" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/khpartho623/focus_timer/fc05017f1e970beb8634bbe549fcd5590c38aa7a/Rain%20white%20noise.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="starfield"></div>
+
+    <div id="app" class="text-white overflow-hidden">
+        
+        <!-- Dim Overlay -->
+        <div id="dim-overlay"></div>
+
+        <!-- Dim Mode Button (Top Left) -->
+        <div class="absolute top-6 left-6 z-50">
+            <button id="dim-btn" onclick="toggleDim()" class="control-btn p-2 border border-white/20 rounded-full text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+        </div>
+
+        <!-- Rain Sound Toggle Button (Top Right) -->
+        <div class="absolute top-6 right-6 z-50">
+            <button id="sound-btn" onclick="toggleRain()" class="control-btn p-2 border border-white/20 rounded-full text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>
+            </button>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="p-6 dimmable-content">
+            <div class="flex items-center justify-center mb-10">
+                <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 mr-6">&minus;</button>
+                <div id="set-time-display" class="text-8xl font-normal text-red-500 leading-none p-2 tracking-tighter">60</div>
+                <button onclick="plusTime(5)" class="text-red-500 text-4xl p-2 hover:bg-red-500/10 active:scale-90 transition duration-150 ml-6">+</button>
+            </div>
+            <input type="hidden" id="custom-minutes" value="60" />
+            <button onclick="startTimerFromSetup()" class="border border-red-500 bg-transparent text-red-500 font-medium text-sm rounded-full py-2 px-8 transition duration-150 mt-4 hover:bg-red-500/10 active:scale-95">
+                Let's do it...
+            </button>
+        </div>
+
+        <!-- Lock Screen -->
+        <div id="lock-screen" class="hidden p-6">
+            <!-- Large Main Timer -->
+            <div id="timer-display">00:00</div>
+            
+            <div id="lock-screen-content" class="dimmable-content w-full flex flex-col items-center">
+                <h1 class="text-lg font-normal tracking-[0.2em] text-gray-400 mb-1">LOCKED</h1>
+                <p id="lock-message" class="text-xs text-gray-500 max-w-xs px-4 leading-relaxed mb-10">
+                    Focus on your task. No distractions allowed.
+                </p>
+                <button id="add-minute-button" class="border border-[#ff6347]/50 text-[#ff6347] py-2 px-8 rounded-full text-xs font-semibold mb-5 hover:bg-[#ff6347]/10 transition-all" onclick="addTime(60)">
+                    +1 Minute
+                </button>
+                
+                <div class="flex gap-4 items-center mt-2">
+                    <button id="pause-button" class="text-gray-500 text-[10px] uppercase tracking-widest hover:text-gray-300 transition-colors" onclick="togglePause()">
+                        Pause
+                    </button>
+                </div>
+
+                <footer class="text-[9px] text-gray-600 uppercase tracking-widest mt-12 w-full px-4">
+                    <p>©2025 All Rights Reserved. Powered by KH Partho</p>
                 </footer>
             </div>
         </div>
@@ -231,7 +691,7 @@
         const timerDisplay = document.getElementById('timer-display');
         const lockMessage = document.getElementById('lock-message');
         const addMinuteButton = document.getElementById('add-minute-button');
-        const unlockButton = document.getElementById('unlock-button');
+        const pauseButton = document.getElementById('pause-button');
         const customMinutesInput = document.getElementById('custom-minutes');
         const setTimeDisplay = document.getElementById('set-time-display');
         const rainAudio = document.getElementById('rain-audio');
@@ -246,18 +706,19 @@
         let synth = null;
         let isRainPlaying = false;
         let isDimmed = false;
+        let isPaused = false;
 
         function toggleDim() {
             isDimmed = !isDimmed;
             if (isDimmed) {
                 dimOverlay.classList.add('active');
                 appContainer.classList.add('dimmed');
-                appContainer.classList.add('dimmed-controls'); // Lower brightness for top buttons
+                appContainer.classList.add('dimmed-controls'); 
                 dimBtn.style.color = "#ef4444"; 
             } else {
                 dimOverlay.classList.remove('active');
                 appContainer.classList.remove('dimmed');
-                appContainer.classList.remove('dimmed-controls'); // Restore brightness for top buttons
+                appContainer.classList.remove('dimmed-controls'); 
                 dimBtn.style.color = "white";
             }
         }
@@ -340,13 +801,8 @@
             timerDisplay.textContent = formatTime(timeRemaining);
         }
 
-        async function startTimerFromSetup() {
-            await initializeSynth();
-            timeRemaining = parseInt(customMinutesInput.value) * 60;
-            setupScreen.classList.add('hidden');
-            lockScreen.classList.remove('hidden');
-            playFocusStartSound();
-            unlockButton.classList.add('active');
+        function startTimerTick() {
+            if (intervalId) clearInterval(intervalId);
             intervalId = setInterval(() => {
                 if (timeRemaining <= 0) {
                     stopTimer();
@@ -355,21 +811,51 @@
                     updateDisplay();
                 }
             }, 1000);
+        }
+
+        async function startTimerFromSetup() {
+            await initializeSynth();
+            timeRemaining = parseInt(customMinutesInput.value) * 60;
+            isPaused = false;
+            pauseButton.textContent = "Pause";
+            setupScreen.classList.add('hidden');
+            lockScreen.classList.remove('hidden');
+            playFocusStartSound();
+            startTimerTick();
             updateDisplay();
         }
 
-        function stopTimer(emergency = false) {
+        function togglePause() {
+            if (!intervalId && !isPaused) return; 
+
+            if (isPaused) {
+                isPaused = false;
+                pauseButton.textContent = "Pause";
+                pauseButton.classList.remove('text-red-500');
+                pauseButton.classList.add('text-gray-500');
+                timerDisplay.style.opacity = "1";
+                startTimerTick();
+            } else {
+                isPaused = true;
+                pauseButton.textContent = "Resume";
+                pauseButton.classList.remove('text-gray-500');
+                pauseButton.classList.add('text-red-500');
+                timerDisplay.style.opacity = "0.5";
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        function stopTimer() {
             clearInterval(intervalId);
             intervalId = null;
-            unlockButton.classList.remove('active');
-            if (emergency) {
-                lockMessage.textContent = 'Emergency stop initiated.';
-                timerDisplay.style.color = "#9ca3af";
-            } else {
-                playFocusEndSequence();
-                lockMessage.textContent = "Session Complete!";
-                timerDisplay.style.color = "#22c55e";
-            }
+            isPaused = false;
+            timerDisplay.style.opacity = "1";
+
+            playFocusEndSequence();
+            lockMessage.textContent = "Session Complete!";
+            timerDisplay.style.color = "#22c55e";
+            
             addMinuteButton.classList.add('hidden');
             lockScreen.onclick = () => {
                 lockScreen.onclick = null;
@@ -377,11 +863,400 @@
                 setupScreen.classList.remove('hidden');
                 addMinuteButton.classList.remove('hidden');
                 timerDisplay.style.color = "#ef4444";
+                lockMessage.textContent = "Focus on your task. No distractions allowed.";
             };
         }
 
-        function handleEmergencyStop() {
-            if (intervalId) stopTimer(true);
+        function addTime(s) {
+            timeRemaining += s;
+            updateDisplay();
+        }
+
+        document.addEventListener('DOMContentLoaded', createStars);
+    </script>
+</body>
+</html></p>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const setupScreen = document.getElementById('setup-screen');
+        const lockScreen = document.getElementById('lock-screen');
+        const timerDisplay = document.getElementById('timer-display');
+        const lockMessage = document.getElementById('lock-message');
+        const addMinuteButton = document.getElementById('add-minute-button');
+        const pauseButton = document.getElementById('pause-button');
+        const customMinutesInput = document.getElementById('custom-minutes');
+        const setTimeDisplay = document.getElementById('set-time-display');
+        const rainAudio = document.getElementById('rain-audio');
+        const soundBtn = document.getElementById('sound-btn');
+        const dimBtn = document.getElementById('dim-btn');
+        const dimOverlay = document.getElementById('dim-overlay');
+        const appContainer = document.getElementById('app');
+
+        let intervalId = null;
+        let timeRemaining = 0;
+        let currentSetMinutes = 60;
+        let synth = null;
+        let isRainPlaying = false;
+        let isDimmed = false;
+        let isPaused = false;
+
+        function toggleDim() {
+            isDimmed = !isDimmed;
+            if (isDimmed) {
+                dimOverlay.classList.add('active');
+                appContainer.classList.add('dimmed');
+                appContainer.classList.add('dimmed-controls'); 
+                dimBtn.style.color = "#ef4444"; 
+            } else {
+                dimOverlay.classList.remove('active');
+                appContainer.classList.remove('dimmed');
+                appContainer.classList.remove('dimmed-controls'); 
+                dimBtn.style.color = "white";
+            }
+        }
+
+        function toggleRain() {
+            if (isRainPlaying) {
+                rainAudio.pause();
+                soundBtn.style.color = "white";
+            } else {
+                rainAudio.play().catch(e => console.log("Audio interaction blocked"));
+                soundBtn.style.color = "#ef4444";
+            }
+            isRainPlaying = !isRainPlaying;
+        }
+
+        async function initializeSynth() {
+            if (!synth) {
+                try {
+                    await Tone.start();
+                    synth = new Tone.Synth({
+                        oscillator: { type: "sine" },
+                        envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 }
+                    }).toDestination();
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        function playFocusStartSound() {
+            if (!synth) return;
+            const notes = ["C5", "E5", "G5"];
+            let now = Tone.now();
+            synth.triggerAttackRelease(notes[0], "8n", now);
+            synth.triggerAttackRelease(notes[1], "8n", now + 0.2);
+            synth.triggerAttackRelease(notes[2], "8n", now + 0.4);
+        }
+
+        function playFocusEndSequence() {
+            for(let i=0; i<4; i++) {
+                setTimeout(playFocusStartSound, i * 1000);
+            }
+        }
+
+        function createStars() {
+            const starfield = document.getElementById('starfield');
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 1.5 + 0.5;
+                star.style.width = star.style.height = `${size}px`;
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.animationDuration = `${Math.random() * 5 + 3}s`;
+                star.style.animationDelay = `${Math.random() * 10}s`;
+                starfield.appendChild(star);
+            }
+        }
+
+        function updateSetTimeDisplay() {
+            setTimeDisplay.textContent = currentSetMinutes;
+            customMinutesInput.value = currentSetMinutes;
+        }
+
+        function plusTime(m) {
+            currentSetMinutes = Math.min(300, currentSetMinutes + m);
+            updateSetTimeDisplay();
+        }
+
+        function minusTime(m) {
+            currentSetMinutes = Math.max(1, currentSetMinutes - m);
+            updateSetTimeDisplay();
+        }
+
+        function formatTime(s) {
+            const min = Math.floor(s / 60);
+            const sec = s % 60;
+            return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(timeRemaining);
+        }
+
+        function startTimerTick() {
+            if (intervalId) clearInterval(intervalId);
+            intervalId = setInterval(() => {
+                if (timeRemaining <= 0) {
+                    stopTimer();
+                } else {
+                    timeRemaining--;
+                    updateDisplay();
+                }
+            }, 1000);
+        }
+
+        async function startTimerFromSetup() {
+            await initializeSynth();
+            timeRemaining = parseInt(customMinutesInput.value) * 60;
+            isPaused = false;
+            pauseButton.textContent = "Pause";
+            setupScreen.classList.add('hidden');
+            lockScreen.classList.remove('hidden');
+            playFocusStartSound();
+            startTimerTick();
+            updateDisplay();
+        }
+
+        function togglePause() {
+            if (!intervalId && !isPaused) return; 
+
+            if (isPaused) {
+                isPaused = false;
+                pauseButton.textContent = "Pause";
+                pauseButton.classList.remove('text-red-500');
+                pauseButton.classList.add('text-gray-500');
+                timerDisplay.style.opacity = "1";
+                startTimerTick();
+            } else {
+                isPaused = true;
+                pauseButton.textContent = "Resume";
+                pauseButton.classList.remove('text-gray-500');
+                pauseButton.classList.add('text-red-500');
+                timerDisplay.style.opacity = "0.5";
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(intervalId);
+            intervalId = null;
+            isPaused = false;
+            timerDisplay.style.opacity = "1";
+
+            playFocusEndSequence();
+            lockMessage.textContent = "Session Complete!";
+            timerDisplay.style.color = "#22c55e";
+            
+            addMinuteButton.classList.add('hidden');
+            lockScreen.onclick = () => {
+                lockScreen.onclick = null;
+                lockScreen.classList.add('hidden');
+                setupScreen.classList.remove('hidden');
+                addMinuteButton.classList.remove('hidden');
+                timerDisplay.style.color = "#ef4444";
+                lockMessage.textContent = "Focus on your task. No distractions allowed.";
+            };
+        }
+
+        function addTime(s) {
+            timeRemaining += s;
+            updateDisplay();
+        }
+
+        document.addEventListener('DOMContentLoaded', createStars);
+    </script>
+</body>
+</html></p>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const setupScreen = document.getElementById('setup-screen');
+        const lockScreen = document.getElementById('lock-screen');
+        const timerDisplay = document.getElementById('timer-display');
+        const lockMessage = document.getElementById('lock-message');
+        const addMinuteButton = document.getElementById('add-minute-button');
+        const pauseButton = document.getElementById('pause-button');
+        const customMinutesInput = document.getElementById('custom-minutes');
+        const setTimeDisplay = document.getElementById('set-time-display');
+        const rainAudio = document.getElementById('rain-audio');
+        const soundBtn = document.getElementById('sound-btn');
+        const dimBtn = document.getElementById('dim-btn');
+        const dimOverlay = document.getElementById('dim-overlay');
+        const appContainer = document.getElementById('app');
+
+        let intervalId = null;
+        let timeRemaining = 0;
+        let currentSetMinutes = 60;
+        let synth = null;
+        let isRainPlaying = false;
+        let isDimmed = false;
+        let isPaused = false;
+
+        function toggleDim() {
+            isDimmed = !isDimmed;
+            if (isDimmed) {
+                dimOverlay.classList.add('active');
+                appContainer.classList.add('dimmed');
+                appContainer.classList.add('dimmed-controls'); 
+                dimBtn.style.color = "#ef4444"; 
+            } else {
+                dimOverlay.classList.remove('active');
+                appContainer.classList.remove('dimmed');
+                appContainer.classList.remove('dimmed-controls'); 
+                dimBtn.style.color = "white";
+            }
+        }
+
+        function toggleRain() {
+            if (isRainPlaying) {
+                rainAudio.pause();
+                soundBtn.style.color = "white";
+            } else {
+                rainAudio.play().catch(e => console.log("Audio interaction blocked"));
+                soundBtn.style.color = "#ef4444";
+            }
+            isRainPlaying = !isRainPlaying;
+        }
+
+        async function initializeSynth() {
+            if (!synth) {
+                try {
+                    await Tone.start();
+                    synth = new Tone.Synth({
+                        oscillator: { type: "sine" },
+                        envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 }
+                    }).toDestination();
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        function playFocusStartSound() {
+            if (!synth) return;
+            const notes = ["C5", "E5", "G5"];
+            let now = Tone.now();
+            synth.triggerAttackRelease(notes[0], "8n", now);
+            synth.triggerAttackRelease(notes[1], "8n", now + 0.2);
+            synth.triggerAttackRelease(notes[2], "8n", now + 0.4);
+        }
+
+        function playFocusEndSequence() {
+            for(let i=0; i<4; i++) {
+                setTimeout(playFocusStartSound, i * 1000);
+            }
+        }
+
+        function createStars() {
+            const starfield = document.getElementById('starfield');
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 1.5 + 0.5;
+                star.style.width = star.style.height = `${size}px`;
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.animationDuration = `${Math.random() * 5 + 3}s`;
+                star.style.animationDelay = `${Math.random() * 10}s`;
+                starfield.appendChild(star);
+            }
+        }
+
+        function updateSetTimeDisplay() {
+            setTimeDisplay.textContent = currentSetMinutes;
+            customMinutesInput.value = currentSetMinutes;
+        }
+
+        function plusTime(m) {
+            currentSetMinutes = Math.min(300, currentSetMinutes + m);
+            updateSetTimeDisplay();
+        }
+
+        function minusTime(m) {
+            currentSetMinutes = Math.max(1, currentSetMinutes - m);
+            updateSetTimeDisplay();
+        }
+
+        function formatTime(s) {
+            const min = Math.floor(s / 60);
+            const sec = s % 60;
+            return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(timeRemaining);
+        }
+
+        function startTimerTick() {
+            if (intervalId) clearInterval(intervalId);
+            intervalId = setInterval(() => {
+                if (timeRemaining <= 0) {
+                    stopTimer();
+                } else {
+                    timeRemaining--;
+                    updateDisplay();
+                }
+            }, 1000);
+        }
+
+        async function startTimerFromSetup() {
+            await initializeSynth();
+            timeRemaining = parseInt(customMinutesInput.value) * 60;
+            isPaused = false;
+            pauseButton.textContent = "Pause";
+            setupScreen.classList.add('hidden');
+            lockScreen.classList.remove('hidden');
+            playFocusStartSound();
+            startTimerTick();
+            updateDisplay();
+        }
+
+        function togglePause() {
+            if (!intervalId && !isPaused) return; 
+
+            if (isPaused) {
+                isPaused = false;
+                pauseButton.textContent = "Pause";
+                pauseButton.classList.remove('text-red-500');
+                pauseButton.classList.add('text-gray-500');
+                timerDisplay.style.opacity = "1";
+                startTimerTick();
+            } else {
+                isPaused = true;
+                pauseButton.textContent = "Resume";
+                pauseButton.classList.remove('text-gray-500');
+                pauseButton.classList.add('text-red-500');
+                timerDisplay.style.opacity = "0.5";
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(intervalId);
+            intervalId = null;
+            isPaused = false;
+            timerDisplay.style.opacity = "1";
+
+            playFocusEndSequence();
+            lockMessage.textContent = "Session Complete!";
+            timerDisplay.style.color = "#22c55e";
+            
+            addMinuteButton.classList.add('hidden');
+            lockScreen.onclick = () => {
+                lockScreen.onclick = null;
+                lockScreen.classList.add('hidden');
+                setupScreen.classList.remove('hidden');
+                addMinuteButton.classList.remove('hidden');
+                timerDisplay.style.color = "#ef4444";
+                lockMessage.textContent = "Focus on your task. No distractions allowed.";
+            };
         }
 
         function addTime(s) {
