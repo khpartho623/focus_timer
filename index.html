@@ -187,12 +187,10 @@
 
         <!-- Setup Screen -->
         <div id="setup-screen" class="p-6 dimmable-content">
-            <div class="flex items-center justify-between w-full px-4 mb-10">
-                <button onclick="minusTime(5)" class="text-red-500 text-5xl p-2 font-bold w-12">&minus;</button>
-                <div class="flex-1 flex justify-center">
-                    <div id="set-time-display" class="text-8xl font-thin text-red-500 leading-none tracking-tighter min-w-[160px]">60</div>
-                </div>
-                <button onclick="plusTime(5)" class="text-red-500 text-5xl p-2 font-bold w-12">+</button>
+            <div class="flex items-center justify-center mb-10">
+                <button onclick="minusTime(5)" class="text-red-500 text-4xl p-2 font-bold">&minus;</button>
+                <div id="set-time-display" class="text-8xl font-thin text-red-500 leading-none tracking-tighter">60</div>
+                <button onclick="plusTime(5)" class="text-red-500 text-4xl p-2 font-bold">+</button>
             </div>
             <input type="hidden" id="custom-minutes" value="60" />
             <button onclick="startTimerFromSetup()" class="border border-red-500 text-red-500 rounded-full py-2 px-8 mt-4">
