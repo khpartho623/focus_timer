@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus Lock Timer</title>
+    <title>Focus Timer</title>
     
-    <!-- Tailwind CSS stylinger jonno -->
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tone.js sound effects-er jonno -->
+    <!-- Tone.js for sound effects -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
     <style>
-        /* Phone App-er moto look deyar jonno custom CSS */
+        /* Phone App-like look custom CSS */
         body {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
             background-color: #0d0c1d; 
@@ -33,8 +33,14 @@
             height: 100%;
             z-index: -1;
             pointer-events: none;
+            transition: opacity 1s ease; /* Added for smooth transition when dimming */
         }
         
+        /* Class to hide stars in Dim Mode */
+        .stars-hidden {
+            opacity: 0 !important;
+        }
+
         .star {
             position: absolute;
             background-color: #ffffff;
@@ -76,7 +82,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); 
+            background-color: rgba(0, 0, 0, 0.95); 
             border-radius: 2rem;
             z-index: 20;
             pointer-events: none;
@@ -113,7 +119,7 @@
             margin-bottom: 2rem;
         }
 
-        /* Dim mode positioning (Set to Top -25%) */
+        /* Dim mode positioning */
         .dimmed #timer-display {
             position: absolute;
             top: -25%; 
@@ -222,15 +228,15 @@
         const setupScreen = document.getElementById('setup-screen');
         const lockScreen = document.getElementById('lock-screen');
         const timerDisplay = document.getElementById('timer-display');
-        const addMinuteButton = document.getElementById('add-minute-button');
-        const pauseButton = document.getElementById('pause-button');
-        const customMinutesInput = document.getElementById('custom-minutes');
         const setTimeDisplay = document.getElementById('set-time-display');
+        const customMinutesInput = document.getElementById('custom-minutes');
         const rainAudio = document.getElementById('rain-audio');
         const soundBtn = document.getElementById('sound-btn');
         const dimBtn = document.getElementById('dim-btn');
         const dimOverlay = document.getElementById('dim-overlay');
         const appContainer = document.getElementById('app');
+        const starfield = document.getElementById('starfield');
+        const pauseButton = document.getElementById('pause-button');
 
         let intervalId = null;
         let timeRemaining = 0;
@@ -246,11 +252,13 @@
                 dimOverlay.classList.add('active');
                 appContainer.classList.add('dimmed');
                 appContainer.classList.add('dimmed-controls'); 
+                starfield.classList.add('stars-hidden'); // Hide stars
                 dimBtn.style.color = "#ef4444"; 
             } else {
                 dimOverlay.classList.remove('active');
                 appContainer.classList.remove('dimmed');
                 appContainer.classList.remove('dimmed-controls'); 
+                starfield.classList.remove('stars-hidden'); // Show stars
                 dimBtn.style.color = "white";
             }
         }
@@ -260,7 +268,7 @@
                 rainAudio.pause();
                 soundBtn.style.color = "white";
             } else {
-                rainAudio.play().catch(e => console.log("Audio play kora jachche na"));
+                rainAudio.play().catch(e => console.log("Audio play error"));
                 soundBtn.style.color = "#ef4444";
             }
             isRainPlaying = !isRainPlaying;
@@ -287,7 +295,6 @@
         }
 
         function createStars() {
-            const starfield = document.getElementById('starfield');
             starfield.innerHTML = '';
             for (let i = 0; i < 20; i++) {
                 const star = document.createElement('div');
@@ -366,7 +373,7 @@
             updateDisplay();
         }
 
-        document.addEventListener('DOMContentLoaded', createStars);
+        window.onload = createStars;
     </script>
 </body>
 </html>
