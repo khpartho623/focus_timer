@@ -199,11 +199,10 @@
             <div id="timer-display">00:00</div>
             
             <div id="lock-screen-content" class="dimmable-content w-full flex flex-col items-center">
-                <h1 class="text-lg font-bold tracking-[0.2em] text-gray-400 mb-1">LOCKED</h1>
-                <p id="lock-message" class="text-xs text-gray-500 max-w-xs px-4 leading-relaxed mb-10">
-                    Focus on your task. No distractions allowed.
-                </p>
-                <button id="add-minute-button" class="border border-[#ff6347]/50 text-[#ff6347] py-2 px-8 rounded-full text-xs font-semibold mb-5 hover:bg-[#ff6347]/10 transition-all" onclick="addTime(60)">
+                <!-- Headings removed as requested -->
+                
+                <!-- Moved down by changing mt-4 to mt-12 -->
+                <button id="add-minute-button" class="border border-red-500 bg-transparent text-red-500 font-medium text-sm rounded-full py-2 px-8 transition duration-150 mt-12 hover:bg-red-500/10 active:scale-95 mb-10" onclick="addTime(60)">
                     +1 Minute
                 </button>
                 
@@ -224,7 +223,6 @@
         const setupScreen = document.getElementById('setup-screen');
         const lockScreen = document.getElementById('lock-screen');
         const timerDisplay = document.getElementById('timer-display');
-        const lockMessage = document.getElementById('lock-message');
         const addMinuteButton = document.getElementById('add-minute-button');
         const pauseButton = document.getElementById('pause-button');
         const customMinutesInput = document.getElementById('custom-minutes');
@@ -388,7 +386,6 @@
             timerDisplay.style.opacity = "1";
 
             playFocusEndSequence();
-            lockMessage.textContent = "Session Complete!";
             timerDisplay.style.color = "#22c55e";
             
             addMinuteButton.classList.add('hidden');
@@ -398,7 +395,6 @@
                 setupScreen.classList.remove('hidden');
                 addMinuteButton.classList.remove('hidden');
                 timerDisplay.style.color = "#ef4444";
-                lockMessage.textContent = "Focus on your task. No distractions allowed.";
             };
         }
 
